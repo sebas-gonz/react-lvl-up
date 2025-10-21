@@ -1,0 +1,44 @@
+/*Variables */
+:root {
+    --color-bg: #0b0f17;
+    --color-bg-alt: #141e2b;
+    --color-electric-blue: #007bff;
+    --color-electric-blue-dark: #005fcc;
+    --color-green-neon: #39ff14;
+    --color-green-neon-dark: #27c30d;
+    --color-text: #f2f6fa;
+    --color-text-dim: #b3c0cc;
+    --color-border: #1f2c3a;
+    --radius: 12px;
+    --transition: .25s ease;
+}
+
+/*Estilos de Bootstrap */
+.nav-link {
+    color: var(--color-text-dim) !important;
+    position: relative;
+    transition: color var(--transition) !important;
+}
+.nav-link:hover, .nav-link:focus-visible{
+    color: var(--color-green-neon) !important;
+}
+.nav-link::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-electric-blue), var(--color-green-neon));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition);
+}
+.nav-link:hover::after, .nav-link:focus-visible::after{
+    transform: scale(1);
+}
+
+/*Mis estilos */
+.bg-header {
+    background-color: var(--color-bg-alt) !important;
+}

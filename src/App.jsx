@@ -1,37 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./componentes/layout/MainLayout";
 
-import 'bootstrap/dist/css/bootstrap.min.css';
+
+import HomePage from './paginas/HomePage.jsx';
+import AutenticacionLayout from "./componentes/layout/AutenticacionLayout.jsx";
+import LoginPage from "./paginas/LoginPage.jsx";
+import CrearSesionPage from "./paginas/CrearSesionPage.jsx";
+import CategoriasPage from "./paginas/CategoriasPage.jsx";
+import OfertasPage from "./paginas/OfertasPage.jsx";
+import NosotrosPage from "./paginas/NosotrosPage.jsx";
+import BlogPage from "./paginas/BlogPage.jsx";
+import ContactoPage from "./paginas/ContactoPage.jsx"
+import CarritoPage from "./paginas/CarritoPage.jsx";
+import OrdenPage from "./paginas/OrdenPage.jsx";
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+
+        <Routes>
+            {/* Todas las rutas aquí usarán tu Header y Footer */}
+            <Route path="/" element={<MainLayout/>}>
+                {/* La página de inicio que acabamos de crear */}
+                <Route index element={<HomePage />} />
+                {/* Tus otras páginas irían aquí */}
+                {/* <Route path="productos" element={<ProductosPage />} /> */}
+                <Route path="categorias" element={<CategoriasPage/>} />
+                <Route path="ofertas" element={<OfertasPage/>} />
+                <Route path="nosotros" element={<NosotrosPage/>} />
+                <Route path="blog" element={<BlogPage/>} />
+                <Route path="contacto" element={<ContactoPage/>} />
+                <Route path="carrito" element={<CarritoPage/>} />
+                <Route path="compra" element={<OrdenPage/>} />
+            </Route>
+            <Route path="/login" element={<AutenticacionLayout/>}>
+                <Route index element={<LoginPage />} />
+            </Route>
+            
+            <Route path="/iniciar-sesion" element={<AutenticacionLayout/>}>
+                <Route index element={<CrearSesionPage />} />
+            </Route>
+            {/* Rutas sin layout (como el login) irían aquí afuera */}
+            {/* <Route path="/login" element={<LoginPage />} /> */}
+        </Routes>
+    )
 }
 
 export default App
