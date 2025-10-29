@@ -33,10 +33,10 @@ class Database {
             productos: this.#productos,
             carritos: this.#carritos,
             ordenes: this.#ordenes,
-            constadoresPorPrefijo: this.#contadoresPorPrefijo
+            contadoresPorPrefijo: this.#contadoresPorPrefijo
         };
         try {
-          
+
             localStorage.setItem(db_key, JSON.stringify(datos));
         } catch (error) {
             console.error("Error al guardar la base de datos:", error);
@@ -56,14 +56,7 @@ class Database {
 
                 this.#usuarios = (datos.usuarios ?? []).map(userData => new Usuario(userData));
 
-                this.#productos = (datos.productos ?? []).map(prodData => {
-                    const categoria = this.#categorias.find(c => c.categoriaId === prodData.categoriaId);
-                    if (!categoria) {
-                        console.warn(`No se encontró la categoría con ID ${prodData.categoriaId} para el producto ${prodData.nombreProducto}`);
-                        return null;
-                    }
-                    return new Producto({ ...prodData, categoria });
-                }).filter(p => p !== null);
+                this.#productos = (datos.productos ?? []).map(prodData => new Producto(prodData));
 
                 this.#carritos = (datos.carritos ?? []).map(cartData => new Carrito(cartData));
 
@@ -77,10 +70,10 @@ class Database {
                 Carrito.syncNextId(this.#carritos);
                 Orden.syncNextId(this.#ordenes);
 
-                console.log("¡Base de datos cargada y sincronizada!");
+                console.log("Base de datos cargada");
 
             } else {
-                
+
                 console.log("No se encontraron datos guardados. Inicializando base de datos...");
                 this.#iniciarDatos();
             }
@@ -132,10 +125,68 @@ class Database {
     }
 
     agregarCarrito(usuario, producto, cantidad) {
-        const nuevoCarrito = new Carrito(usuario, producto, cantidad);
+        const nuevoCarrito = new Carrito({ usuario, producto, cantidad });
         this.#carritos.push(nuevoCarrito);
         this.#guardarDB();
         return nuevoCarrito;
+    }
+
+    agregarProductoAlCarrito(usuario, producto, cantidad = 1) {
+        const itemExistenteIndex = this.#carritos.findIndex(
+            item => item.usuarioId === usuario.usuarioId && item.productoId === producto.productoId
+        );
+
+        if (itemExistenteIndex > -1) {
+
+            const itemExistente = this.#carritos[itemExistenteIndex];
+
+            itemExistente.cantidad += cantidad;
+        } else {
+
+            const nuevoItem = new Carrito({ usuario, producto, cantidad });
+            this.#carritos.push(nuevoItem);
+        }
+
+        this.#guardarDB();
+
+        return true;
+    }
+
+    actualizarCantidadItem(carroId, nuevaCantidad) {
+        const itemIndex = this.#carritos.findIndex(item => item.carroId === carroId);
+        if (itemIndex > -1) {
+            if (nuevaCantidad > 0) {
+
+                this.#carritos[itemIndex].cantidad = nuevaCantidad;
+                this.#guardarDB();
+                return this.#carritos[itemIndex];
+            } else {
+                return this.eliminarItemDelCarrito(carroId);
+            }
+        } else {
+            throw new Error(`Item con ID ${carroId} no encontrado en el carrito.`);
+        }
+    }
+
+    eliminarItemDelCarrito(carroId) {
+        const indice = this.#carritos.findIndex(item => item.carroId === carroId);
+        if (indice > -1) {
+            this.#carritos.splice(indice, 1);
+            this.#guardarDB();
+            return true;
+        }
+        return false;
+    }
+
+    limpiarCarritoUsuario(usuarioId) {
+        this.#carritos = this.#carritos.filter(item => item.usuarioId !== usuarioId);
+        this.#guardarDB();
+        return true;
+    }
+
+    obtenerCarritoUsuario(usuarioId) {
+        if (!usuarioId) return [];
+        return this.#carritos.filter(item => item.usuarioId === usuarioId);
     }
 
     obtenerCarritos() {
@@ -144,6 +195,11 @@ class Database {
 
     obtenerCarritoPorId(id) {
         return this.#carritos.find(carr => carr.carritoId === id);
+    }
+
+    obtenerOrdenPorId(id) {
+        const numericId = typeof id === 'string' ? parseInt(id, 10) : id; 
+        return this.#ordenes.find(o => o.ordenId === numericId); 
     }
 
     agregarCategoria(datosCategoria) {
@@ -165,6 +221,9 @@ class Database {
         return [...this.#categorias];
     }
 
+    obtenerOrdenes(){
+        return[...this.#ordenes]
+    }
     obtenerUsuarios() {
         return [...this.#usuarios]
     }
@@ -174,7 +233,7 @@ class Database {
         if (!categoria) {
             throw new Error(`La categoría con id ${datosProducto.categoriaId} no existe.`);
         }
-        const prefijo = categoria.prefijo; 
+        const prefijo = categoria.prefijo;
         if (!this.#contadoresPorPrefijo[prefijo]) {
             this.#contadoresPorPrefijo[prefijo] = 1;
         }
@@ -190,12 +249,12 @@ class Database {
         });
 
         this.#productos.push(nuevoProducto);
-        this.#guardarDB(); 
+        this.#guardarDB();
         return nuevoProducto;
     }
 
     obtenerProductoPorId(id) {
-        return this.#productos.find(p => p.id === id);
+        return this.#productos.find(p => p.productoId === id);
     }
 
     obtenerProductos() {
@@ -224,9 +283,22 @@ class Database {
         return nuevoUsuario;
     }
 
+    crearOrden(datosParaOrden) { 
+        if (!datosParaOrden.usuario || !datosParaOrden.carritos || datosParaOrden.carritos.length === 0) {
+            throw new Error("Datos insuficientes para crear la orden.");
+        }
+        const nuevaOrden = new Orden(datosParaOrden);
+        this.#ordenes.push(nuevaOrden);
+        this.#guardarDB(); 
+
+        this.limpiarCarritoUsuario(datosParaOrden.usuario.usuarioId);
+
+        return nuevaOrden; 
+    }
+
     obtenerUsuarioPorId(id) {
 
-        const numericId = typeof id === 'string' ? parseInt(id, 10) : id; 
+        const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
         return this.#usuarios.find(u => u.usuarioId === numericId);
     }
 

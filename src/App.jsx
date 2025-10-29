@@ -28,6 +28,8 @@ import NuevaCategoriaPage from "./paginas/Admin/Categorias/NuevaCategoriaPage.js
 import ListadoUsuariosPage from './paginas/Admin/Usuarios/ListadoUsuariosPage.jsx'
 import NuevoUsuarioPage from "./paginas/Admin/Usuarios/NuevoUsuarioPage.jsx";
 import ReportesPage from "./paginas/Admin/Reportes/ReportesPage.jsx";
+import ProductoPage from "./paginas/ProductoPage.jsx";
+import OrdenConfirmadaPage from "./paginas/OrdenConfirmadaPage.jsx";
 function App() {
 
     return (
@@ -44,6 +46,10 @@ function App() {
                 <Route path="contacto" element={<ContactoPage />} />
                 <Route path="carrito" element={<CarritoPage />} />
                 <Route path="compra" element={<OrdenPage />} />
+
+                <Route path="productos/:productoId" element={<ProductoPage />} />
+
+                <Route path="orden-confirmada/:ordenId" element={<OrdenConfirmadaPage />} />
             </Route>
             <Route path="/login" element={<AutenticacionLayout />}>
                 <Route index element={<LoginPage />} />
@@ -58,7 +64,8 @@ function App() {
                     
                     <Route index element={<AdminPage />} /> 
                     <Route path="ordenes" element={<OrdenesPage/>} />
-                    <Route path="ordenes/orden" element={<OrdenDetallePage/>}/>
+                    <Route path="ordenes/:ordenId" element={<OrdenDetallePage />} />
+                    
                     <Route path="productos" element={<ProductosPage/>}/>
                     <Route path="productos/criticos" element={<ProductosCriticosPage/>}/>
                     <Route path="productos/tarjetas" element={<ProductosTarjetaPage/>}/>

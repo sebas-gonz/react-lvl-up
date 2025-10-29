@@ -1,22 +1,18 @@
 import React from 'react'
 
-export default function OrdenCompletadoCard() {
-    const ordenData = {
-        nombre: "pedro",
-        apellido: "hacker", 
-        correo: "pedro.hacer20@example.com",
-        calle: "Los crisantemos, Edificio Norte",
-        depto: "Depto 603",
-        region: "Región Metropolitana de Santiago",
-        comuna: "Cerrillos",
-        indicaciones: "El martes no estaremos en el depto, pero puede dejarselo con el conserje.",
-        productos: [
-            { id: 1, img: "https://via.placeholder.com/50", nombre: "Fortnite", precio: 0, cantidad: 1, subtotal: 0 }
-        
-        ],
-        totalPagado: 28775
-    };
+export default function OrdenCompletadoCard({ orden }) {
 
+    const formatoChile = (valor) => `$${valor.toLocaleString('es-CL')}`
+
+    const nombreCliente = orden.nombreCliente || `${orden.nombre || ''} ${orden.apellido || ''}`;
+    const correoCliente = orden.correo || 'No disponible';
+    const direccionCompleta = `${orden.direccion || ''}${orden.numeroDepartamento ? `, Depto ${orden.numeroDepartamento}` : ''}`;
+    const regionCliente = orden.region || 'No disponible';
+    const comunaCliente = orden.comuna || 'No disponible';
+    const indicacionesCliente = orden.indicacion || '';
+    const itemsOrden = orden.carritos || orden.items || [];
+    const totalOrden = orden.total || 0;
+    const numeroDepartamento = orden.numeroDepartamento
     return (
         <>
             <div className="row my-3">
@@ -26,7 +22,7 @@ export default function OrdenCompletadoCard() {
                         <div className="col-3 col-md-4 mb-3">
                             <label htmlFor="nombre" className="form-label">Nombre<small
                                 className="text-danger">*</small></label>
-                            <input type="text" className="form-control" id="nombre" value="pedro"
+                            <input type="text" className="form-control" id="nombre" value={nombreCliente}
                                 disabled readOnly name="nombre" required />
                         </div>
                         <div className="col-6 col-md-4 mb-3">
@@ -41,7 +37,7 @@ export default function OrdenCompletadoCard() {
                             <label htmlFor="correo" className="form-label">Correo<small
                                 className="text-danger">*</small></label>
                             <input type="email" className="form-control" id="correo" name="correo"
-                                disabled value="pedro.hacer20@example.com" required />
+                                disabled value={correoCliente} required />
                         </div>
                     </div>
                 </div>
@@ -54,40 +50,32 @@ export default function OrdenCompletadoCard() {
                                 <label htmlFor="fechaNacimiento" className="form-label">Calle<small
                                     className="text-danger">*</small></label>
                                 <input type="text" className="form-control" id="fechaNacimiento"
-                                    value="Los crisantemos, Edificio Norte" disabled
+                                    value={direccionCompleta} disabled
                                     name="fechaNacimiento" required />
                             </div>
                             <div className="mb-3 col-12 col-md-6">
                                 <label htmlFor="fechaNacimiento" className="form-label">Departamento
                                     (opcional)</label>
                                 <input type="text" className="form-control" id="fechaNacimiento"
-                                    name="fechaNacimiento" disabled value="Depto 603"
+                                    name="fechaNacimiento" disabled value={numeroDepartamento}
                                     placeholder="Ej: 603" />
                             </div>
 
                             <div className="mb-3 col-6 col-md-6">
                                 <label htmlFor="regionSelect" className="form-label">Región<small
                                     className="text-danger">*</small></label>
-                                <select className="form-select" id="regionSelect" disabled
-                                    required>
-                                    <option value="1000">Región Metropolitana de Santiago
-                                    </option>
-                                </select>
+                                <input type="text" className="form-control" value={regionCliente} disabled readOnly />
                             </div>
                             <div className="mb-3 col-6 col-md-6">
                                 <label htmlFor="comunaSelect" className="form-label">Comuna<small
                                     className="text-danger">*</small></label>
-                                <select className="form-select" id="comunaSelect" disabled
-                                    required>
-                                    <option value="1001">Cerrillos</option>
-                                </select>
+                                <input type="text" className="form-control" value={comunaCliente} disabled readOnly />
                             </div>
                             <div className="mb-3">
                                 <label htmlFor className="form-label">Indicaciones para la entrega
                                     (opcional)</label>
                                 <textarea className="form-control" rows="3"
-                                    placeholder="Ej.: Entre calles, color del edificio, no tiene timbre."
-                                    disabled></textarea>
+                                    disabled value={indicacionesCliente}></textarea>
                             </div>
                         </div>
                     </div>
@@ -109,14 +97,26 @@ export default function OrdenCompletadoCard() {
                                     </tr>
                                 </thead>
                                 <tbody id="comprados-list">
-                                    <tr>
-                                        <td><img src="https://via.placeholder.com/400x300"
-                                            alt="Fortnite"  /></td>
-                                        <td>Fortnite</td>
-                                        <td>$ 0</td>
-                                        <td>1</td>
-                                        <td>$ 0</td>
-                                    </tr>
+                                    {itemsOrden.length > 0 ? (
+                                        itemsOrden.map((item, index) => (
+                                            <tr key={item.carroId || item.productoId || index}>
+                                                <td>
+                                                    <img
+                                                        
+                                                        src={item.imagenProducto}
+                                                        alt={item.nombreProducto}
+                                                        style={{ width: "50px", height: "auto", objectFit: 'contain' }}
+                                                    />
+                                                </td>
+                                                <td className='align-middle'>{item.nombreProducto || 'N/A'}</td>
+                                                <td className='text-end align-middle'>{formatoChile(item.precioUnitarioAlAgregar)}</td>
+                                                <td className='text-center align-middle'>{item.cantidad || 0}</td>
+                                                <td className='text-end align-middle'>{formatoChile(item.subTotal)}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr><td colSpan="5" className="text-center text-muted">No hay productos en esta orden.</td></tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -126,7 +126,7 @@ export default function OrdenCompletadoCard() {
             <div className="text-center mb-3">
                 <div className="card bg-white">
                     <div className="card-body">
-                        <h4>Total pagado: $ 28775</h4>
+                        <h4>Total pagado: {formatoChile(totalOrden)}</h4>
                     </div>
                 </div>
             </div>

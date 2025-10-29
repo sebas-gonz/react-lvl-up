@@ -6,7 +6,7 @@ export default class Carrito {
     #carroId;
     #usuarioId;
     #productoId;
-    #precioProducto;
+    #precioUnitarioAlAgregar;
     #cantidad;
     #subTotal;
     #createdAt;
@@ -19,24 +19,60 @@ export default class Carrito {
         }
     }
 
-    constructor({carroId,usuario,usuarioId, producto,productoId, cantidad,precioProducto,createdAt,updatedAt}) {
-        if(usuario && producto){
+    constructor({
+        usuario,
+        producto,
+        carroId,
+        usuarioId,
+        productoId,
+        precioUnitarioAlAgregar,
+        createdAt,
+        updatedAt,
+        cantidad
+    }) {
+        let esCreacion = false
+        if (usuario && producto) {
+            esCreacion = true;
             if (!(usuario instanceof Usuario)) throw new Error('El objeto no es una instancia de Usuario');
-            if (!(producto instanceof Producto)) throw new Error('El objeto no es una instancia de Producto')
-            
+            if (!(producto instanceof Producto)) throw new Error('El objeto no es una instancia de Producto');
+
             this.#usuarioId = usuario.usuarioId;
-            this.#productoId = producto.id;
-            this.#precioProducto = producto.precio; 
-        } else{
+            this.#productoId = producto.productoId;
+            this.#precioUnitarioAlAgregar = producto.precioProducto;
+        }
+        else {
             this.#usuarioId = usuarioId;
             this.#productoId = productoId;
-            this.#precioProducto = precioProducto;
+            this.#precioUnitarioAlAgregar = precioUnitarioAlAgregar;
         }
         this.#carroId = carroId || Carrito.#nextId++;
         this.#cantidad = cantidad;
-        this.#subTotal = this.#precioProducto * cantidad;
+        const cantNum = parseInt(this.#cantidad, 10);
+        const precioNum = parseFloat(this.#precioUnitarioAlAgregar);
+        console.log(`Carrito constructor (${esCreacion ? 'NUEVO' : 'CARGADO'} ID: ${this.#carroId}) - Valores para subtotal:`, {
+            cantidadRaw: this.#cantidad,
+            precioRaw: this.#precioUnitarioAlAgregar,
+            cantNumParsed: cantNum,
+            precioNumParsed: precioNum
+        });
+
+
+        if (!isNaN(cantNum) && !isNaN(precioNum)) {
+            this.#subTotal = precioNum * cantNum;
+        } else {
+            console.warn(`Error al calcular subtotal para Carrito ID ${this.#carroId}. Cantidad o Precio inválidos.`);
+            this.#subTotal = 0;
+        }
+
+        console.log(`Carrito constructor (ID: ${this.#carroId}) - Subtotal calculado:`, this.#subTotal);
+
+
         this.#createdAt = createdAt ? new Date(createdAt) : new Date();
         this.#updatedAt = updatedAt ? new Date(updatedAt) : new Date();
+    }
+
+    get precioUnitarioAlAgregar() {
+        return this.#precioUnitarioAlAgregar;
     }
 
     get carroId() {
@@ -67,17 +103,17 @@ export default class Carrito {
         return this.#updatedAt;
     }
 
-    get precioProducto(){
-        return this.#precioProducto
-    }
 
     set cantidad(nuevaCantidad) {
-        if (typeof nuevaCantidad === 'number' && Number.isInteger(nuevaCantidad)) {
-            this.#cantidad = nuevaCantidad;
-            this.#subTotal = this.#precioProducto * nuevaCantidad;
+
+        const cantNum = parseInt(nuevaCantidad, 10);
+        if (!isNaN(cantNum)) {
+            this.#cantidad = cantNum;
+            const precioNum = parseFloat(this.#precioUnitarioAlAgregar)
+            this.#subTotal = precioNum * this.#cantidad;
             this.#updatedAt = new Date();
         } else {
-            console.error("La cantidad debe ser un número entero");
+            console.error("La cantidad debe ser un número entero no negativo.");
         }
     }
 
@@ -88,6 +124,18 @@ export default class Carrito {
         } else {
             console.error('El nuevo usuario no es una instancia de Usuario');
         }
+    }
+
+    toJSON() {
+        return {
+            carroId: this.#carroId,
+            usuarioId: this.#usuarioId,
+            productoId: this.#productoId,
+            cantidad: this.#cantidad,
+            precioUnitarioAlAgregar: this.#precioUnitarioAlAgregar,
+            createdAt: this.#createdAt.toISOString(),
+            updatedAt: this.#updatedAt.toISOString()
+        };
     }
 
 }

@@ -20,6 +20,8 @@ export default class Orden {
         if (ordenes && ordenes.length > 0) {
             const maxId = Math.max(...ordenes.map(o => o.ordenId));
             Orden.#nextId = maxId + 1;
+        } else {
+            Orden.#nextId = 1;
         }
     }
 
@@ -28,9 +30,11 @@ export default class Orden {
         carritos,
         ordenId,
         usuarioId,
+        items,
         total,
         createdAt,
         updatedAt,
+        estado,
         nombreCliente,
         direccion,
         comuna,
@@ -39,20 +43,15 @@ export default class Orden {
         indicacion = ''
     }) {
         if (usuario && carritos) {
-            if (!(usuario instanceof Usuario)) throw new Error("El 'usuario' no es una instancia de la clase Usuario.");
-            if (!Array.isArray(carritos) || carritos.length === 0) throw new Error("La lista de 'carritos' no puede estar vacía.");
 
             this.#ordenId = Orden.#nextId++;
             this.#usuarioId = usuario.usuarioId;
-            this.#carritos = carritos; 
-
-            this.#total = this.#carritos.reduce((acumulador, item) => acumulador + item.subtotal, 0);
-
+            this.#carritos = carritos.map(itemData => new Carrito(itemData)); 
+            this.#total = this.#carritos.reduce((acumulador, item) => acumulador + item.subTotal, 0)
             this.#nombreCliente = `${usuario.nombre} ${usuario.apellido}`;
             this.#direccion = usuario.direccion;
             this.#comuna = usuario.comuna;
             this.#region = usuario.region;
-
             this.#createdAt = new Date();
             this.#updatedAt = new Date();
         }
@@ -67,10 +66,10 @@ export default class Orden {
 
             this.#createdAt = createdAt ? new Date(createdAt) : new Date();
             this.#updatedAt = updatedAt ? new Date(updatedAt) : new Date();
-
-            this.#carritos = items.map(itemData => new Carrito(itemData));
+            this.#carritos = (items || []).map(itemData => new Carrito(itemData));
         }
 
+        // --- Común ---
         this.#numeroDepartamento = numeroDepartamento;
         this.#indicacion = indicacion;
     }
@@ -93,7 +92,7 @@ export default class Orden {
         return this.#total;
     }
 
-    get createAt() {
+    get createdAt() {
         return this.#createdAt;
     }
 
@@ -122,8 +121,24 @@ export default class Orden {
         return this.#indicacion;
     }
 
-    get updatedAt(){
+    get updatedAt() {
         return this.#updatedAt;
     }
 
+    toJSON() {
+        return {
+            ordenId: this.#ordenId,
+            usuarioId: this.#usuarioId,
+            items: this.#carritos.map(item => item.toJSON()),
+            total: this.#total,
+            createdAt: this.#createdAt.toISOString(),
+            updatedAt: this.#updatedAt.toISOString(),
+            nombreCliente: this.#nombreCliente,
+            direccion: this.#direccion,
+            comuna: this.#comuna,
+            region: this.#region,
+            numeroDepartamento: this.#numeroDepartamento,
+            indicacion: this.#indicacion
+        };
+    }
 }

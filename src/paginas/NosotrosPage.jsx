@@ -3,49 +3,60 @@ import { Link } from 'react-router-dom'
 
 export default function NosotrosPage() {
     return (
-        <div className="row justify-content-center">
-            <div className="col-md-8">
-                <div className="card">
-                    <img src="src\assets\imagenes\Banner\banner2.png" className="card-img-top" alt="Videojuegos Retro"/>
+        <div className="container my-4">
+            <div className="row justify-content-center">
+                <div className="col-lg-10 col-xl-8">
+                    <div className="card bg-dark text-light border-secondary">
+                        <img src="src\assets\imagenes\Banner\banner2.png" className="card-img-top" alt="Banner Lvl-Up" />
                         <div className="card-body">
-                            <h4 className="card-title text-center mb-3">🎮 Historia de RetroGaming Haven</h4>
-                            <h4 className="mb-2 text-muted">Un Viaje al Pasado 🚀</h4>
-                            <p className="card-text">
-                                RetroGaming Haven nació en el año 2010, en un pequeño local del centro de la ciudad, fundado por dos amigos apasionados por los videojuegos de su infancia. Con un sueño compartido de revivir la emoción de las consolas y juegos clásicos, comenzaron Link coleccionar, restaurar y vender videojuegos y consolas retro.
-                            </p>
-                            <h4 className="mb-2 text-muted">Crecimiento y Comunidad 🌟</h4>
-                            <p className="card-text">
-                                Con el tiempo, RetroGaming Haven se ganó la reputación de ser un santuario para los amantes de los videojuegos clásicos. Organizamos eventos temáticos y torneos que reúnen Link jugadores de todas las edades para compartir su amor por los juegos de antaño. Nuestra comunidad creció rápidamente, y en 2015, inauguramos nuestra tienda en línea, permitiendo que los aficionados de todo el mundo accedan Link nuestro catálogo de tesoros retro.
-                            </p>
-                            <h4 className="mb-2 text-muted">🎯 Misión</h4>
-                            <p className="card-text">
-                                Nuestra misión es preservar y celebrar la rica historia de los videojuegos, ofreciendo una experiencia única y nostálgica Link nuestros clientes. Nos esforzamos por ser un puente entre generaciones, proporcionando productos de calidad y servicios excepcionales Link los coleccionistas y entusiastas del gaming clásico.
-                            </p>
-                            <h4 className="mb-2 text-muted">🔮 Visión</h4>
-                            <p className="card-text">
-                                En RetroGaming Haven, soñamos con ser líderes mundiales en el mercado de videojuegos retro, comprometidos con la innovación y la expansión de nuestra comunidad global. Buscamos ser el destino predilecto para quienes desean revivir y compartir los momentos dorados del pasado del gaming.
-                            </p>
-                            <h4 className="mb-2 text-muted">🚀 Innovación Continua</h4>
-                            <p className="card-text">
-                                A lo largo de los años, hemos ampliado nuestra oferta para incluir servicios de reparación y restauración de consolas, así como una línea exclusiva de merchandising inspirado en los clásicos del videojuego. En el futuro, planeamos lanzar una serie de documentales que exploren la evolución de los videojuegos y su impacto en la cultura popular.
-                            </p>
+                            <h4 className="card-title text-center mb-4">🎮 Sobre Lvl-Up</h4>
 
+                            <section className="mb-4">
+                                <h5 className="mb-2 text-primary">💻 Proyecto Académico - Programación Full Stack II</h5>
+                                <p className="card-text">
+                                    Este proyecto fue desarrollado por <strong>Sebastián González</strong>, estudiante de segundo año de
+                                    <strong> Duoc UC</strong>, como parte del ramo <strong>Programación Full Stack II (Año 2025)</strong>.
+                                    Está construido utilizando <strong>React</strong> con <strong>Vite</strong> como herramienta de construcción.
+                                </p>
+                                <p className="card-text">
+                                    La finalidad de este proyecto es afianzar las habilidades en el desarrollo web moderno,
+                                    demostrando la capacidad del estudiante para diseñar y construir una plataforma de e-commerce
+                                    funcional, atractiva y adaptable, orientada a empresas que deseen vender sus productos en línea.
+                                    Este trabajo integra los conocimientos adquiridos en front-end, back-end y buenas prácticas
+                                    de desarrollo, reflejando un enfoque profesional en la creación de aplicaciones web completas.
+                                </p>
+                            </section>
 
-                            <div className="text-center">
-                                <div className="row">              
-                                    <div className="col-lg-4 d-flex flex-column mx-auto">
-                                        <img src="/assets/img/pedro.png" className="bd-placeholder-img rounded-circle" width="140" height="140" alt=""/>
-                                            <h2 className="fw-normal">Pedro</h2>
-                                            <small><strong>Programador</strong></small>
-                                            <p>Estudiante de informática Duoc UC 🎮 Me gusta programar.</p>
-                                            <div className="d-flex justify-content-center">
-                                                <Link to="https://github.com/pedrohacker20" className="btn btn-dark btn-sm"><i className="bi bi-github"></i></Link>
-                                                <Link to="https://www.linkedin.com/feed/" className="btn btn-dark btn-sm mx-2"><i className="bi bi-linkedin"></i></Link>
-                                            </div>
+                            <hr className="my-4" />
+
+                            <section className="text-center">
+                                <h5 className="mb-3">Desarrollado por</h5>
+                                <div className="row justify-content-center">
+                                    <div className="col-lg-6 d-flex flex-column align-items-center">
+                                        <img
+                                            src="https://avatars.githubusercontent.com/u/135254198?v=4"
+                                            className="bd-placeholder-img rounded-circle mb-2"
+                                            width="140"
+                                            height="140"
+                                            alt="Sebastián González"
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                        <h2 className="fw-normal fs-4 mb-1">Sebastián González</h2>
+                                        <small className='d-block mb-2'><strong>Estudiante Desarrollador</strong></small>
+
+                                        <div className="d-flex justify-content-center">
+                                            <a href="https://github.com/sebas-gonz" target="_blank" rel="noopener noreferrer" className="btn btn-light btn-sm me-2">
+                                                <i className="bi bi-github"></i> GitHub
+                                            </a>
+                                            <a href="#" target="_blank" rel="noopener noreferrer" className="btn btn-light btn-sm">
+                                                <i className="bi bi-linkedin"></i> LinkedIn
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </section>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

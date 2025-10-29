@@ -1,8 +1,9 @@
 import React from 'react'
-import Productos from '../componentes/Categorias/Productos'
+
+import ProductosCategoria from '../componentes/Categorias/ProductosCategoria'
 
 export default function CategoriasPage() {
-  return (
-    <Productos titulo = 'Categoria'></Productos>
-  )
+    return (
+        <ProductosCategoria titulo='Categoria'></ProductosCategoria>
+    )
 }
