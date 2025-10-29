@@ -14,15 +14,40 @@
 }
 
 /*Estilos de Bootstrap */
+.navbar {
+    background-color: var(--color-bg-alt) !important;
+    border-bottom: 2px solid var(--color-electric-blue);
+}
+
+
+.card {
+    background-color: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-green-neon);
+    border-color: var(--color-green-neon);
+    color: #031b08;
+}
+
+.card-item {
+    box-shadow: 0 4px 22px -8px #000000a6;
+}
+
 .nav-link {
     color: var(--color-text-dim) !important;
     position: relative;
     transition: color var(--transition) !important;
 }
-.nav-link:hover, .nav-link:focus-visible{
+
+.nav-link:hover,
+.nav-link:focus-visible {
     color: var(--color-green-neon) !important;
 }
-.nav-link::after{
+
+.nav-link::after {
     content: "";
     position: absolute;
     left: 0;
@@ -34,11 +59,66 @@
     transform-origin: left;
     transition: transform var(--transition);
 }
-.nav-link:hover::after, .nav-link:focus-visible::after{
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
     transform: scale(1);
+}
+
+.form-control:focus {
+    background-color: #0e1621;
+    color: var(--color-text);
+    border-color: var(--color-electric-blue);
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--color-text-dim);
+    opacity: 0.7;
+}
+
+.dropdown-menu {
+    background-color: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+}
+
+.dropdown-item {
+    color: var(--color-text-dim);
+}
+
+.dropdown-item:hover {
+    color: var(--color-green-neon);
+    background-color: #172636;
+}
+
+.offcanvas {
+    background-color: var(--color-bg-alt);
+    color: var(--color-text);
+    border-right: 1px solid var(--color-border);
+}
+.offcanvas .btn-close {
+    background-color: white;
+
+}
+.table {
+    color: var(--color-text-dim);
+    border-color: var(--color-border-soft);
+}
+
+.table-hover > tbody > tr:hover > * {
+    color: var(--color-text);
+    background-color: #172636;
+}
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #121c26; 
 }
 
 /*Mis estilos */
 .bg-header {
     background-color: var(--color-bg-alt) !important;
+}
+
+body {
+    background-color: var(--color-bg) !important;
+    color: var(--color-text) !important;
 }

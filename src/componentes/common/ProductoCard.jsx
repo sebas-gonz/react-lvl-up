@@ -15,17 +15,17 @@ export default function ProductoCard({ producto }) {
         <div className="card card-producto">
             <img src={imagen} className="card-img-top" alt={nombre} />
             <div className="card-body">
-                <Link to="/productos/producto1.html" className="link-none">
+                <Link to={`/productos/${productoId}`} className="link-none">
                     <p className="card-title">{nombre}</p>
                 </Link>
                 <div className="d-flex flex-column mb-3 mt-auto">
                     {producto.precioOferta !== null && producto.precioOferta < precio && (
                         
-                        <span className="precio-descuento text-decoration-line-through text-muted small">
+                        <span className=" text-decoration-line-through small text-danger">
                             {formatoChile(precio)}
                         </span>
                     )}
-                    <span className="precio-nuevo fw-bolder text-warning fs-5">
+                    <span className="fw-bolder text-warning fs-5">
                         
                         {producto.precioOferta !== null && producto.precioOferta < precio
                             ? formatoChile(producto.precioOferta)
