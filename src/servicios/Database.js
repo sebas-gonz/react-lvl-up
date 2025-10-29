@@ -4,6 +4,7 @@ import Producto from '../modelos/Producto.js';
 import Carrito from '../modelos/Carrito.js';
 import Orden from '../modelos/Orden.js';
 
+import { datosOrdenes, datosProductos, datosUsuarios, datosCategorias } from '../Data/datos.js';
 
 const userKey = 'usuarioActual'
 const db_key = 'lvl-up'
@@ -86,7 +87,78 @@ class Database {
     }
 
     #iniciarDatos() {
-        console.log('Base de datos iniciada por primera vez.');
+        console.log('Base de datos iniciada por primera vez. Poblando...');
+        try {
+            datosCategorias.forEach(cat => this.#agregarCategoriaSeed(cat));
+            console.log(`${this.#categorias.length} categorías creadas.`);
+
+
+            datosUsuarios.forEach(user => this.#registrarUsuarioSeed(user));
+            console.log(`${this.#usuarios.length} usuarios creados.`);
+
+            datosProductos.forEach(prod => {
+                const categoria = this.obtenerCategoriaPorId(prod.categoriaId);
+                if (categoria) {
+                    this.#agregarProductoSeed({ ...prod, categoriaId: categoria.categoriaId });
+                }
+            });
+            console.log(`${this.#productos.length} productos creados.`);
+
+            datosOrdenes.forEach(ordenData => {
+                const usuario = this.obtenerUsuarioPorId(ordenData.usuarioId);
+                if (!usuario) return; 
+
+                const carritosParaConstructor = ordenData.carritos.map(item => {
+                    const producto = this.obtenerProductoPorId(item.productoId);
+                    if (!producto) return null;
+                    return { ...item, producto, usuario };
+                }).filter(Boolean);
+
+                if (carritosParaConstructor.length > 0) {
+                    const nuevaOrden = new Orden({
+                        ...ordenData,
+                        usuario: usuario,
+                        carritos: carritosParaConstructor
+                    });
+                    this.#ordenes.push(nuevaOrden);
+                }
+            });
+            console.log(`${this.#ordenes.length} órdenes creadas.`);
+
+            this.#guardarDB();
+            console.log("¡Datos iniciales guardados en localStorage!");
+
+        } catch (error) {
+            console.error("Error durante el seeding:", error);
+        }
+    }
+
+
+    #registrarUsuarioSeed(datosUsuario) {
+        const correoExistente = this.#usuarios.find(u => u.correo === datosUsuario.correo);
+        if (correoExistente) return;
+        const nuevoUsuario = new Usuario(datosUsuario);
+        this.#usuarios.push(nuevoUsuario);
+    }
+
+    #agregarCategoriaSeed(datosCategoria) {
+        const nombreExistente = this.#categorias.find(cat => cat.nombreCategoria.toLowerCase() === datosCategoria.nombreCategoria.toLowerCase());
+        if (nombreExistente) return;
+        const nuevaCategoria = new Categoria(datosCategoria);
+        this.#categorias.push(nuevaCategoria);
+    }
+
+    #agregarProductoSeed(datosProducto) {
+        const categoria = this.obtenerCategoriaPorId(datosProducto.categoriaId);
+        if (!categoria) return;
+        const prefijo = categoria.prefijo;
+        if (!this.#contadoresPorPrefijo[prefijo]) {
+            this.#contadoresPorPrefijo[prefijo] = 1;
+        }
+        const numeroSecuencial = this.#contadoresPorPrefijo[prefijo]++;
+        const codigoProducto = `${prefijo}${String(numeroSecuencial).padStart(3, '0')}`;
+        const nuevoProducto = new Producto({ ...datosProducto, codigoProducto: codigoProducto });
+        this.#productos.push(nuevoProducto);
     }
 
     login(correo, contraseña) {
@@ -198,8 +270,8 @@ class Database {
     }
 
     obtenerOrdenPorId(id) {
-        const numericId = typeof id === 'string' ? parseInt(id, 10) : id; 
-        return this.#ordenes.find(o => o.ordenId === numericId); 
+        const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+        return this.#ordenes.find(o => o.ordenId === numericId);
     }
 
     agregarCategoria(datosCategoria) {
@@ -221,8 +293,8 @@ class Database {
         return [...this.#categorias];
     }
 
-    obtenerOrdenes(){
-        return[...this.#ordenes]
+    obtenerOrdenes() {
+        return [...this.#ordenes]
     }
     obtenerUsuarios() {
         return [...this.#usuarios]
@@ -283,17 +355,17 @@ class Database {
         return nuevoUsuario;
     }
 
-    crearOrden(datosParaOrden) { 
+    crearOrden(datosParaOrden) {
         if (!datosParaOrden.usuario || !datosParaOrden.carritos || datosParaOrden.carritos.length === 0) {
             throw new Error("Datos insuficientes para crear la orden.");
         }
         const nuevaOrden = new Orden(datosParaOrden);
         this.#ordenes.push(nuevaOrden);
-        this.#guardarDB(); 
+        this.#guardarDB();
 
         this.limpiarCarritoUsuario(datosParaOrden.usuario.usuarioId);
 
-        return nuevaOrden; 
+        return nuevaOrden;
     }
 
     obtenerUsuarioPorId(id) {
@@ -304,13 +376,6 @@ class Database {
 
     obtenerProductosPorCategoria(categoriaId) {
         return this.#productos.filter(p => p.categoriaId === categoriaId)
-    }
-
-    crearOrden(datosOrden) {
-        const nuevaOrden = new Orden(datosOrden);
-        this.#ordenes.push(nuevaOrden);
-        this.#guardarDB();
-        return nuevaOrden;
     }
 
     obtenerOrdenesPorUsuario(usuarioId) {

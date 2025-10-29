@@ -219,9 +219,9 @@ export default function Registro({ esAdmin = false }) {
                                     {errores.direccion && <div className="invalid-feedback">{errores.direccion}</div>}
                                 </div>
                                 <div className="mb-3 col-6 col-md-6">
-                                    <label htmlFor="regionSelect" className="form-label">Región<small
+                                    <label htmlFor="region" className="form-label">Región<small
                                         className="text-danger">*</small></label>
-                                    <select className="form-select" id="regionSelect" value={formData.region} onChange={handleRegionChange} >
+                                    <select className="form-select" id="region" value={formData.region} onChange={handleRegionChange} >
                                         <option value="">Seleccione una región</option>
                                         {regiones.map(region => (
                                             <option key={region} value={region}>{region}</option>
@@ -229,7 +229,7 @@ export default function Registro({ esAdmin = false }) {
                                     </select>
                                 </div>
                                 <div className="mb-3 col-6 col-md-6">
-                                    <label htmlFor="comunaSelect" className="form-label">Comuna<small
+                                    <label htmlFor="comuna" className="form-label">Comuna<small
                                         className="text-danger">*</small></label>
                                     <select className={`form-select ${errores.comuna ? 'is-invalid' : ''}`} id="comuna" name="comuna"
                                         value={formData.comuna} onChange={handleChange} disabled={comunas.length === 0}>

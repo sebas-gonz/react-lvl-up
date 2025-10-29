@@ -19,6 +19,8 @@ export default class Usuario {
         if (usuarios && usuarios.length > 0) {
             const maxId = Math.max(...usuarios.map(u => u.usuarioId));
             Usuario.#nextId = maxId + 1;
+        } else {
+            Usuario.#nextId = 1; 
         }
     }
 

@@ -30,8 +30,8 @@ export default function OffCanvas() {
                                     <h5 className="card-title">{usuarioActual.nombre} {usuarioActual.apellido}</h5>
                                     <p className="card-text"><small>{usuarioActual.correo}</small></p>
                                     <div className="d-flex justify-content-between">
-                                        <Link to="/#" className="btn btn-primary btn-sm">Ver Perfil</Link> {/* Use Link */}
-                                        <button onClick={handleLogout} className="btn btn-danger btn-sm">Cerrar Sesión</button> {/* Call logout */}
+                                        <Link to="/#" className="btn btn-primary btn-sm">Ver Perfil</Link> 
+                                        <button onClick={handleLogout} className="btn btn-danger btn-sm">Cerrar Sesión</button> 
                                     </div>
                                 </div>
                             </div>

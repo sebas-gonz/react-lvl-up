@@ -34,7 +34,7 @@ export default function Carrusel({ productos = [] }) {
                 <div className="carousel-inner">
                     {productos.map((producto, index) => (
 
-                        <div className={`carousel-productos ${index === 0 ? 'active' : ''}`} key={producto.productoId || index}>
+                        <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={producto.productoId || index}>
                             <Link to={`/productos/${producto.productoId}`}>
                                 <img
                                     src={producto.imagenesProducto}

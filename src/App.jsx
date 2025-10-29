@@ -30,6 +30,7 @@ import NuevoUsuarioPage from "./paginas/Admin/Usuarios/NuevoUsuarioPage.jsx";
 import ReportesPage from "./paginas/Admin/Reportes/ReportesPage.jsx";
 import ProductoPage from "./paginas/ProductoPage.jsx";
 import OrdenConfirmadaPage from "./paginas/OrdenConfirmadaPage.jsx";
+import ProductosPorCategoriaPage from './paginas/ProductosPorCategoriaPage.jsx'
 function App() {
 
     return (
@@ -46,6 +47,8 @@ function App() {
                 <Route path="contacto" element={<ContactoPage />} />
                 <Route path="carrito" element={<CarritoPage />} />
                 <Route path="compra" element={<OrdenPage />} />
+
+                <Route path="categorias/:categoriaId" element={<ProductosPorCategoriaPage />} />
 
                 <Route path="productos/:productoId" element={<ProductoPage />} />
 
@@ -65,7 +68,7 @@ function App() {
                     <Route index element={<AdminPage />} /> 
                     <Route path="ordenes" element={<OrdenesPage/>} />
                     <Route path="ordenes/:ordenId" element={<OrdenDetallePage />} />
-                    
+
                     <Route path="productos" element={<ProductosPage/>}/>
                     <Route path="productos/criticos" element={<ProductosCriticosPage/>}/>
                     <Route path="productos/tarjetas" element={<ProductosTarjetaPage/>}/>

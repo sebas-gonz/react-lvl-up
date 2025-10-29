@@ -1,7 +1,18 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import '../../assets/estilos/header/navbar.css'
 import { Link } from 'react-router-dom'
+import db from '../../servicios/Database';
 export default function NavBar2() {
+    const [categorias, setCategorias] = useState([]);
+
+    useEffect(() => {
+        try {
+            const categoriasObtenidas = db.obtenerCategorias();
+            setCategorias(categoriasObtenidas);
+        } catch (error) {
+            console.error("Error al cargar categorías para el Navbar:", error);
+        }
+    }, []);
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary d-none d-lg-block">
             <div className="container-fluid">
@@ -16,9 +27,27 @@ export default function NavBar2() {
                                 Categorías
                             </Link>
                             <ul className="dropdown-menu">
-                                <li><Link className="dropdown-item" to="/categorias">Acción</Link></li>
-                                <li><Link className="dropdown-item" to="/categorias.html">Aventura</Link></li>
-                                <li><Link className="dropdown-item" to="/categorias.html">Estrategia</Link></li>
+                                {categorias.length > 0 ? (
+                                    categorias.map(categoria => (
+                                        <li key={categoria.categoriaId}>
+                                            <Link
+                                                className="dropdown-item"
+                                                
+                                                to={`/categorias/${categoria.categoriaId}`}
+                                            >
+                                                {categoria.nombreCategoria}
+                                            </Link>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li><span className="dropdown-item">Cargando...</span></li>
+                                )}
+                                <li><hr className="dropdown-divider" /></li>
+                                <li>
+                                    <Link className="dropdown-item" to="/categorias">
+                                        Ver Todas
+                                    </Link>
+                                </li>
                             </ul>
                         </li>
                         <li className="nav-item">
