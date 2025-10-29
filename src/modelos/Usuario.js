@@ -10,10 +10,11 @@ export default class Usuario {
     #comuna;
     #direccion;
     #run;
+    #contraseña;
     #createdAt;
     #updatedAt;
     #tipoUsuario;
-    
+
     static syncNextId(usuarios) {
         if (usuarios && usuarios.length > 0) {
             const maxId = Math.max(...usuarios.map(u => u.usuarioId));
@@ -22,12 +23,18 @@ export default class Usuario {
     }
 
 
-    constructor({usuarioId, nombre, apellido, correo, fechaNacimiento, region, comuna, direccion, run,
-        createdAt, updatedAt
-        }) {
+    constructor({ usuarioId, nombre, apellido, correo, fechaNacimiento, region, comuna, direccion, run,
+        createdAt, contraseña, updatedAt, tipoUsuario
+    }) {
         this.#usuarioId = usuarioId || Usuario.#nextId++
         if (this.#usuarioId === 1) {
             this.#tipoUsuario = 1
+        } else if (tipoUsuario) {
+
+            this.#tipoUsuario = tipoUsuario
+        } else {
+
+            this.#tipoUsuario = 3
         }
         this.#nombre = nombre;
         this.#apellido = apellido;
@@ -36,11 +43,15 @@ export default class Usuario {
         this.#region = region;
         this.#comuna = comuna;
         this.#direccion = direccion;
-        this.#run = run
+        this.#run = run;
+        this.#contraseña = contraseña;
         this.#createdAt = updatedAt ? new Date(createdAt) : new Date();
-        this.#updatedAt = updatedAt ? new Date(createdAt) : new Date()
+        this.#updatedAt = updatedAt ? new Date(updatedAt) : new Date();
     }
 
+    get contraseña() {
+        return this.#contraseña
+    }
 
     get usuarioId() {
         return this.#usuarioId;
@@ -90,6 +101,15 @@ export default class Usuario {
         return this.#tipoUsuario;
     }
 
+    set contraseña(nuevaContraseña) {
+        if (typeof nuevaContraseña === 'string' && nuevaContraseña.trim() !== '') {
+            this.#contraseña = nuevaContraseña.trim();
+            this.#updatedAt = new Date()
+        } else {
+            console.error('La contraseña debe ser un texto no vacío.')
+        }
+    }
+
     set nombre(nuevoNombre) {
         if (typeof nuevoNombre === 'string' && nuevoNombre.trim() !== '') {
             this.#nombre = nuevoNombre.trim();
@@ -120,7 +140,7 @@ export default class Usuario {
     set fechaNacimiento(nuevaFechaNacimiento) {
         if (nuevaFechaNacimiento instanceof Date) {
             this.#fechaNacimiento = nuevaFechaNacimiento;
-            this.#updatedAt = new Date(); 
+            this.#updatedAt = new Date();
         } else {
             console.error('El valor para fecha de nacimiento no es un objeto Date válido.');
         }
@@ -161,7 +181,7 @@ export default class Usuario {
             console.error('El RUN debe ser un texto no vacío.');
         }
     }
-    
+
     set tipoUsuario(nuevoTipoUsuario) {
         if (typeof nuevoTipoUsuario === 'number' && Number.isInteger(nuevoTipoUsuario)) {
             this.#tipoUsuario = nuevoTipoUsuario;
@@ -171,4 +191,23 @@ export default class Usuario {
         }
     }
 
+    toJSON() {
+        return {
+
+            usuarioId: this.#usuarioId,
+            nombre: this.#nombre,
+            apellido: this.#apellido,
+            correo: this.#correo,
+            fechaNacimiento: this.#fechaNacimiento,
+            region: this.#region,
+            comuna: this.#comuna,
+            direccion: this.#direccion,
+            run: this.#run,
+            contraseña: this.#contraseña,
+            tipoUsuario: this.#tipoUsuario,
+
+            createdAt: this.#createdAt.toISOString(),
+            updatedAt: this.#updatedAt.toISOString()
+        };
+    }
 }

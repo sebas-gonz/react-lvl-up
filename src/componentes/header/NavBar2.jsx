@@ -34,7 +34,7 @@ export default function NavBar2() {
                             <Link className="nav-link" to="/contacto">Contacto</Link>
                         </li>
 
-                        <li className="nav-item">
+                        <li className="nav-item ms-lg-5">
                             <Link className="btn btn-success ms-5" to="/carrito"><strong><i className="bi bi-cart4"></i> Carrito <span className=""> <strong>$5.000</strong></span>
                             </strong></Link>
                         </li>

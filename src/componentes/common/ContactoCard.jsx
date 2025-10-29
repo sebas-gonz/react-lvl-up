@@ -10,15 +10,15 @@ export default function ContactoCard() {
                         <div className="col-md-6">
                             <form>
                                 <div className="mb-3">
-                                    <label for="nombre" className="form-label">Nombre</label>
+                                    <label htmlFor="nombre" className="form-label">Nombre</label>
                                     <input type="text" className="form-control" id="nombre" placeholder="Tu nombre" />
                                 </div>
                                 <div className="mb-3">
-                                    <label for="email" className="form-label">Email</label>
+                                    <label htmlFor="email" className="form-label">Email</label>
                                     <input type="email" className="form-control" id="email" placeholder="Tu correo electrónico" />
                                 </div>
                                 <div className="mb-3">
-                                    <label for="mensaje" className="form-label">Mensaje</label>
+                                    <label htmlFor="mensaje" className="form-label">Mensaje</label>
                                     <textarea className="form-control" id="mensaje" rows="3" placeholder="Tu mensaje"></textarea>
                                 </div>
                                 <div className="text-end">

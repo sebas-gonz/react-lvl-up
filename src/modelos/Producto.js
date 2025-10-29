@@ -2,12 +2,14 @@ import Categoria from "./Categoria";
 
 export default class Producto {
     static #nextId = 1;
-    static #contadoresPorPrefijo = {};
+
     #productoId;
     #codigoProducto;
     #nombreProducto;
     #descripcionProducto;
     #precioProducto;
+    #precioOferta;
+    #oferta
     #stockProducto;
     #stockMinimoProducto;
     #categoriaId;
@@ -22,95 +24,81 @@ export default class Producto {
         }
     }
 
-    static syncContadoresPrefijo(productos) {
-        if (productos && productos.length > 0) {
-            const contadores = {};
-            for (const producto of productos) {
-                const prefijo = producto.codigoProducto.substring(0, 2); 
-                const numero = parseInt(producto.codigoProducto.substring(2));
-                if (!contadores[prefijo] || numero > contadores[prefijo]) {
-                    contadores[prefijo] = numero;
-                }
-            }
-            for (const prefijo in contadores) {
-                Producto.#contadoresPorPrefijo[prefijo] = contadores[prefijo] + 1;
-            }
-        }
-    }
+    constructor({
 
-    constructor({productoId, nombreProducto, descripcionProducto, precioProducto, stockProducto, stockMinimoProducto,
-        categoria, categoriaId, imagenesProducto = [], createdAt, updatedAt, codigoProducto}) {
-
-        if (categoria) {
-            if (!(categoria instanceof Categoria)) {
-                throw new Error("categoria no es una instacia de la clase Categoria");
-            }
-            this.#categoriaId = categoria.categoriaId
-            this.#productoId = Producto.#nextId++
-
-            const prefijo = categoria.prefijo
-            if (!Producto.#contadoresPorPrefijo[prefijo]) {
-                Producto.#contadoresPorPrefijo[prefijo] = 1;
-            }
-
-            const numeroPrefijo = Producto.#contadoresPorPrefijo[prefijo]++;
-            const numeroPrefijoFormateado = String(numeroPrefijo).padStart(3, '0');
-
-            this.#codigoProducto = `${prefijo}${numeroPrefijoFormateado}`;
-
-        } else {
-            this.#categoriaId = categoriaId;
-            this.#productoId = productoId;
-            this.#codigoProducto = codigoProducto
-        }
+        productoId,
+        codigoProducto,
+        nombreProducto,
+        descripcionProducto,
+        precioProducto,
+        precioOferta,
+        oferta,
+        stockProducto,
+        stockMinimoProducto,
+        categoriaId,
+        imagenesProducto,
+        createdAt,
+        updatedAt
+    }) {
 
         this.#productoId = productoId || Producto.#nextId++;
-        
+        this.#codigoProducto = codigoProducto;
+        this.#categoriaId = categoriaId;
         this.#nombreProducto = nombreProducto;
         this.#descripcionProducto = descripcionProducto;
         this.#precioProducto = precioProducto;
+        this.#precioOferta = precioOferta;
+        this.#oferta = oferta;
         this.#stockProducto = stockProducto;
         this.#stockMinimoProducto = stockMinimoProducto;
-        this.#imagenesProducto = imagenesProducto
-        
-        this.#createdAt = createdAt ? new Date(createdAt) : new Date()
-        this.#updatedAt = updatedAt ? new Date(updatedAt) : new Date()
-    }
+        this.#imagenesProducto = imagenesProducto;
 
-    get id() {
-        return this.#productoId;
-    }
-
-    get codigo() {
-        return this.#codigoProducto;
-    }
-
-    get nombre() {
-        return this.#nombreProducto;
-    }
-
-    get descripcion() {
-        return this.#descripcionProducto;
-    }
-
-    get precio() {
-        return this.#precioProducto;
-    }
-
-    get stock() {
-        return this.#stockProducto;
-    }
-
-    get stockMinimo() {
-        return this.#stockMinimoProducto;
+        this.#createdAt = createdAt ? new Date(createdAt) : new Date();
+        this.#updatedAt = updatedAt ? new Date(updatedAt) : new Date();
     }
 
     get categoriaId() {
         return this.#categoriaId;
     }
+    get nombreProducto(){
+        return this.#nombreProducto;
+    }
 
-    get imagenes() {
-        return [...this.#imagenesProducto];
+    get productoId() {
+        return this.#productoId;
+    }
+
+    get oferta() {
+        return this.#oferta
+    }
+
+    get precioOferta() {
+        return this.#precioOferta
+    }
+
+    get codigoProducto() {
+        return this.#codigoProducto;
+    }
+
+
+    get descripcionProducto() {
+        return this.#descripcionProducto;
+    }
+
+    get precioProducto() {
+        return this.#precioProducto;
+    }
+
+    get stockProducto() {
+        return this.#stockProducto;
+    }
+
+    get stockMinimoProducto() {
+        return this.#stockMinimoProducto;
+    }
+
+    get imagenesProducto() {
+        return this.#imagenesProducto;
     }
 
     get createdAt() {
@@ -121,7 +109,28 @@ export default class Producto {
         return this.#updatedAt;
     }
 
-    set categoria(nuevaCategoriaId) {
+    set oferta(nuevaOferta) {
+        if (typeof nuevaOferta === 'boolean') {
+            this.#oferta = nuevaOferta;
+            if (!nuevaOferta) {
+                this.#precioOferta = null; 
+            }
+            this.#updatedAt = new Date();
+        } else {
+            console.error('No se puede determinar si el producto esta en oferta.');
+        }
+    }
+
+    set precioOferta(nuevoPrecioOferta) {
+        if (typeof nuevoPrecioOferta === 'number') {
+            this.#precioOferta = nuevoPrecioOferta;
+            this.#updatedAt = new Date()
+        } else {
+            console.error('El precio debe ser un numero.')
+        }
+    }
+
+    set categoriaId(nuevaCategoriaId) {
         if (typeof nuevaCategoriaId === 'number' && Number.isInteger(nuevaCategoriaId)) {
             this.#categoriaId = nuevaCategoriaId
             this.#updatedAt = new Date()
@@ -130,7 +139,7 @@ export default class Producto {
         }
     }
 
-    set nombre(nuevoNombre) {
+    set nombreProducto(nuevoNombre) {
         if (typeof nuevoNombre === 'string' && nuevoNombre.trim() !== '') {
             this.#nombreProducto = nuevoNombre.trim();
             this.#updatedAt = new Date();
@@ -139,7 +148,7 @@ export default class Producto {
         }
     }
 
-    set descripcion(nuevaDescripcion) {
+    set descripcionProducto(nuevaDescripcion) {
         if (typeof nuevaDescripcion === 'string' && nuevaDescripcion.trim() !== '') {
             this.#descripcionProducto = nuevaDescripcion.trim();
             this.#updatedAt = new Date();
@@ -148,7 +157,7 @@ export default class Producto {
         }
     }
 
-    set precio(nuevoPrecio) {
+    set precioProducto(nuevoPrecio) {
         if (typeof nuevoPrecio === 'number' && Number.isInteger(nuevoPrecio)) {
             this.#precioProducto = nuevoPrecio;
             this.#updatedAt = new Date();
@@ -157,7 +166,7 @@ export default class Producto {
         }
     }
 
-    set stock(nuevoStock) {
+    set stockProducto(nuevoStock) {
         if (typeof nuevoStock === 'number' && Number.isInteger(nuevoStock)) {
             this.#stockProducto = nuevoStock;
             this.#updatedAt = new Date();
@@ -166,7 +175,7 @@ export default class Producto {
         }
     }
 
-    set stockMinimo(nuevoStockMinimo) {
+    set stockMinimoProducto(nuevoStockMinimo) {
         if (typeof nuevoStockMinimo === 'number' && Number.isInteger(nuevoStockMinimo)) {
             this.#stockMinimoProducto = nuevoStockMinimo;
             this.#updatedAt = new Date();
@@ -175,12 +184,26 @@ export default class Producto {
         }
     }
 
-    set imagenes(nuevasImagenes) {
-        if (Array.isArray(nuevasImagenes)) {
+    set imagenesProducto(nuevasImagenes) {
             this.#imagenesProducto = nuevasImagenes;
             this.#updatedAt = new Date();
-        } else {
-            console.error("Las imágenes deben ser proporcionadas en una lista.");
-        }
+    }
+
+    toJSON() {
+        return {
+            productoId: this.#productoId,
+            codigoProducto: this.#codigoProducto,
+            nombreProducto: this.#nombreProducto,
+            descripcionProducto: this.#descripcionProducto,
+            precioProducto: this.#precioProducto,
+            precioOferta: this.#precioOferta,
+            oferta: this.#oferta,
+            stockProducto: this.#stockProducto,
+            stockMinimoProducto: this.#stockMinimoProducto,
+            categoriaId: this.#categoriaId,
+            imagenesProducto: this.#imagenesProducto,
+            createdAt: this.#createdAt.toISOString(),
+            updatedAt: this.#updatedAt.toISOString()
+        };
     }
 }

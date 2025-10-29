@@ -1,8 +1,19 @@
 import React from 'react'
 import '../../assets/estilos/header/navbar.css'
+import { Link, useNavigate } from 'react-router-dom'
+import { usarAuth } from '../../hooks/usarAuth'
 export default function OffCanvas() {
+
+    const { usuarioActual, logout } = usarAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
-        <div className="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMobileMenu"
+        <div className="offcanvas offcanvas-start text-bg-dark" tabIndex="-1" id="offcanvasMobileMenu"
             aria-labelledby="offcanvasMobileMenuLabel">
             <div className="offcanvas-header">
                 <h5 className="offcanvas-title" id="offcanvasMobileMenuLabel">Menú</h5>
@@ -10,32 +21,35 @@ export default function OffCanvas() {
             </div>
             <div className="offcanvas-body">
 
-                <div className="card">
-                    <div className="row g-0 d-flex justify-content-center">
-
-                        <div className="col-8">
-                            <div className="card-body">
-                                <h5 className="card-title">Nombre del Usuario</h5>
-                                <p className="card-text">correo@ejemplo.com</p>
-                                <div className="d-flex justify-content-between">
-                                    <a href="/#" className="btn btn-primary btn-sm">Ver Perfil</a>
-                                    <a href="/#" className="btn btn-danger btn-sm">Cerrar Sesión</a>
+                {usuarioActual ? (
+                    
+                    <div className="card bg-secondary text-light mb-3"> 
+                        <div className="row g-0 d-flex justify-content-center">
+                            <div className="col-8">
+                                <div className="card-body">
+                                    <h5 className="card-title">{usuarioActual.nombre} {usuarioActual.apellido}</h5>
+                                    <p className="card-text"><small>{usuarioActual.correo}</small></p>
+                                    <div className="d-flex justify-content-between">
+                                        <Link to="/#" className="btn btn-primary btn-sm">Ver Perfil</Link> {/* Use Link */}
+                                        <button onClick={handleLogout} className="btn btn-danger btn-sm">Cerrar Sesión</button> {/* Call logout */}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="d-flex my-3">
-                    <a href="/iniciar-sesion.html" className="btn btn-outline-primary ms-2">Iniciar Sesión</a>
-                    <a href="/crear-sesion.html" className="btn btn-primary ms-2">Crear Cuenta</a>
-                </div>
+                ) : (
+                    
+                    <div className="d-flex my-3">
+                        <Link to="/login" className="btn btn-outline-primary ms-2" data-bs-dismiss="offcanvas">Iniciar Sesión</Link>
+                        <Link to="/iniciar-sesion" className="btn btn-primary ms-2" data-bs-dismiss="offcanvas">Crear Cuenta</Link>
+                    </div>
+                )}
 
 
                 <ul className="list-group">
-                    <li className="list-group-item">
+                    <li className="list-group-item bg-dark">
                         <div className="accordion accordion-flush" id="accordionFlushExample">
-                            <div className="accordion-item">
+                            <div className="accordion-item bg-dark">
                                 <h2 className="accordion-header">
                                     <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                         data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
@@ -62,8 +76,8 @@ export default function OffCanvas() {
                             </div>
                         </div>
                     </li>
-                    <li className="list-group-item"><a href="/#" className="link-none">Ofertas</a></li>
-                    <li className="list-group-item"><a href="/#" className="link-none">Historial</a></li>
+                    <li className="list-group-item"><Link to="/ofertas" className="link-none">Ofertas</Link></li>
+                    <li className="list-group-item"><Link to="#" className="link-none">Historial</Link></li>
                 </ul>
             </div>
         </div>
