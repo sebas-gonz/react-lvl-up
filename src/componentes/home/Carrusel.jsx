@@ -37,7 +37,7 @@ export default function Carrusel({ productos = [] }) {
                         <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={producto.productoId || index}>
                             <Link to={`/productos/${producto.productoId}`}>
                                 <img
-                                    src={producto.imagenesProducto}
+                                    src={producto.imagenProducto}
                                     className="d-block w-100"
                                     alt={producto.nombreProducto}
 

@@ -9,8 +9,8 @@ export default function ProductoCard({ producto }) {
 
     const productoId = producto.productoId;
     const nombre = producto.nombreProducto;
-    const imagen = producto.imagenesProducto;
-    const precio = producto.precioProducto;
+    const imagen = producto.imagenProducto;
+    const precio = producto.precio;
     return (
         <div className="card card-producto">
             <img src={imagen} className="card-img-top" alt={nombre} />

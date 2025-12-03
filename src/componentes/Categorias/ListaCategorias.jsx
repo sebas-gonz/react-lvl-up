@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 export default function Categorias({ categorias = [] }) {
     return (
-        <div className='container my-4'> {/* Añadido margen */}
+        <div className='container my-4'> 
             <h2 className="text-center mb-4">Categorías</h2>
             <div className='row row-cols-1 row-cols-md-3 g-4'>
                 {categorias.map(categoria => (
@@ -15,9 +15,9 @@ export default function Categorias({ categorias = [] }) {
                                 alt={categoria.nombreCategoria}
                                 style={{ height: '150px', objectFit: 'cover' }}
                             />
-                            <div className="card-body text-center"> {/* Centrado */}
+                            <div className="card-body text-center">
                                 <h5 className="card-title">{categoria.nombreCategoria}</h5>
-                                <Link to={`/categorias/${categoria.categoriaId}`} className="btn btn-primary mt-auto">Explorar</Link> {/* Ajusta la ruta */}
+                                <Link to={`/categorias/${categoria.categoriaId}`} className="btn btn-primary mt-auto">Explorar</Link>
                             </div>
                         </div>
                     </div>

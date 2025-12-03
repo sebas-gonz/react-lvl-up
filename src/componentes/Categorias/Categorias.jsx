@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import ProductoCard from '../common/ProductoCard'
 import db from '../../servicios/Database';
 import { Link, useParams } from 'react-router-dom';
+import api from '../../api/axiosConfig';
 export default function Categorias() {
 
     const { categoriaId } = useParams();
@@ -10,19 +11,19 @@ export default function Categorias() {
     const [productos, setProductos] = useState([]);
 
     useEffect(() => {
-        try {
-            const idNum = parseInt(categoriaId, 10);
+        const id = parseInt(categoriaId, 10);
+        const cargarDatos = async () => {
+            try {
 
-            const catEncontrada = db.obtenerCategoriaPorId(idNum);
-
-            if (catEncontrada) {
-                setCategoria(catEncontrada);
-                const productosFiltrados = db.obtenerProductosPorCategoria(idNum);
-                setProductos(productosFiltrados);
+                const categoriaCargada = await api.get('/categorias/'+ id)
+                const productosCargados = await api.get('/productos/categoria/'+id)
+                setCategoria(categoriaCargada.data)
+                setProductos(productosCargados.data)
+            } catch(e){
+                console.error('Error al cargar los datos '+ e)
             }
-        } catch (err) {
-            console.error("Error al cargar productos por categoría:", err);
         }
+        cargarDatos()
     }, [categoriaId]);
 
     return (
@@ -31,9 +32,11 @@ export default function Categorias() {
                 {categoria ? categoria.nombreCategoria : 'Categoría'}
             </h2>
             {productos.length > 0 ? (
-                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
                     {productos.map(producto => (
-                        <ProductoCard key={producto.productoId} producto={producto} />
+                        <div className='col' key={producto.productoId}>
+                            <ProductoCard producto={producto} />
+                        </div>
                     ))}
                 </div>
             ) : (

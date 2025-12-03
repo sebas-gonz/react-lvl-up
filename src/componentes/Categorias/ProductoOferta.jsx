@@ -1,20 +1,19 @@
 import { useState, useEffect } from 'react';
 import React from 'react'
 import ProductoCard from '../common/ProductoCard';
-import db from '../../servicios/Database';
+import api from '../../api/axiosConfig';
 export default function ProductoOferta({ titulo = 'Ofertas' }) {
     const [productosEnOferta, setProductosEnOferta] = useState([]);
     useEffect(() => {
-        try {
-            const todosLosProductos = db.obtenerProductos();
-
-            const ofertas = todosLosProductos.filter(producto => producto.oferta === true);
-
-            setProductosEnOferta(ofertas);
-
-        } catch (err) {
-            console.error("Error al cargar productos en oferta:", err);
+        const cargarDatos = async () => {
+            try{
+                const productosCargados = await api.get('/productos/ofertas')
+                setProductosEnOferta(productosCargados.data)
+            } catch (e){
+                console.error("Error al cargar productos en oferta:" + err);
+            }
         }
+        cargarDatos()
     }, []);
     return (
 

@@ -12,7 +12,6 @@ vi.mock('../../hooks/usarAuth', () => ({
 describe('Componente NavBar (Sin Sesión)', () => {
 
     it('debería mostrar "Iniciar Sesión" y "Crear Cuenta" si no hay usuario', () => {
-        // 2. Renderizamos el componente dentro de MemoryRouter
         render(
             <MemoryRouter>
                 <NavBar />

@@ -3,7 +3,8 @@ import Carrusel from './carrusel'
 import Section from '../main/Section'
 import ListaCategorias from '../Categorias/ListaCategorias'
 import ListaProductosHome from '../Producto/ListaProductos'
-import db from '../../servicios/Database'
+
+import api from '../../api/axiosConfig'
 
 export default function MainHome() {
 
@@ -15,19 +16,21 @@ export default function MainHome() {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        try {
-
-            const productosObtenidos = db.obtenerProductos().slice(0, 8);
-            const categoriasObtenidas = db.obtenerCategorias().slice(0, 3);
-
-            setProductos(productosObtenidos);
-            setCategorias(categoriasObtenidas);
-        } catch (err) {
-            console.error("Error al cargar datos del home:", err);
-            setError("No se pudieron cargar los datos.");
-        } finally {
-            setLoading(false);
+        const cargarDatos = async () =>{
+            try{
+                const productosRespuesta = await api.get('/productos')
+                const categoriasRespuesta = await api.get('/categorias')
+                setProductos(productosRespuesta.data)
+                setCategorias(categoriasRespuesta.data)
+                console.log("Datos cargados")
+            } catch(e){
+                console.error("Error al cargar los datos " + e)
+                setError("No se cargaros los datos: " + e)
+            } finally {
+                setLoading(false)
+            }
         }
+        cargarDatos()
     }, []);
 
     return (

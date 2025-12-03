@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Breadcrumb from '../common/Breadcrumb'
-import db from '../../servicios/Database'
 import { usarAuth } from '../../hooks/usarAuth'
+import api from '../../api/axiosConfig'
 
 export default function Producto() {
 
@@ -21,21 +21,18 @@ export default function Producto() {
         setLoading(true);
         setError(null);
         setMensajeExito('');
-        try {
-
-            const id = parseInt(productoId, 10);
-            const productoEncontrado = db.obtenerProductoPorId(id);
-            if (productoEncontrado) {
-                setProducto(productoEncontrado);
-            } else {
-                setError(`Producto con ID ${productoId} no encontrado.`);
+        const id = parseInt(productoId, 10);
+        const cargarDatos = async () => {
+            try {
+                const productoCargado = await api.get('/productos/' + id)
+                setProducto(productoCargado.data)
+            } catch (e){
+                console.error("Error al cargar el producto " + e)
+            } finally {
+                setLoading(false)
             }
-        } catch (err) {
-            console.error("Error al cargar producto:", err);
-            setError("No se pudo cargar la información del producto.");
-        } finally {
-            setLoading(false);
         }
+        cargarDatos()
     }, [productoId]);
 
 
@@ -69,7 +66,7 @@ export default function Producto() {
     if (!producto) return <div className="container mt-5"><p>Producto no encontrado.</p></div>;
 
     const nombre = producto.nombreProducto;
-    const imagen = producto.imagenesProducto;
+    const imagen = producto.imagenProducto;
     const descripcion = producto.descripcionProducto;
     const precio = producto.precioProducto;
     const enOferta = producto.oferta;
@@ -81,17 +78,17 @@ export default function Producto() {
         <div className='container mt-5'>
             <Breadcrumb></Breadcrumb>
             {mensajeExito && <div className="alert alert-success">{mensajeExito}</div>}
-            <div class="card">
-                <div class="card-body row">
+            <div className="card">
+                <div className="card-body row">
 
-                    <div class="col-md-6">
-                        <img src={imagen} class="img-fluid" alt={nombre} />
+                    <div className="col-md-6">
+                        <img src={imagen} className="img-fluid" alt={nombre} />
                     </div>
-                    <div class="col-md-6">
-                        <div class="product-detail p-md-4">
-                            <h1 class="mb-3">Nombre del Producto</h1>
+                    <div className="col-md-6">
+                        <div className="product-detail p-md-4">
+                            <h1 className="mb-3">{nombre}</h1>
 
-                            <div class="d-flex flex-column mb-3 fs-4">
+                            <div className="d-flex flex-column mb-3 fs-4">
                                 {enOferta && precioOferta !== null && precioOferta < precio && (
                                     <span className="precio-descuento text-decoration-line-through text-muted small">
                                         {formatoChile(precio)}
@@ -103,7 +100,7 @@ export default function Producto() {
                                         : formatoChile(precio)}
                                 </span>
                             </div>
-                            <p class="mb-4">
+                            <p className="mb-4">
                                 {descripcion}
                             </p>
                             <div className="d-flex align-items-center mb-4">

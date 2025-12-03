@@ -1,48 +1,56 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import db from '../../../servicios/Database';
 export const AuthContext = createContext(null);
+import api from '../../../api/axiosConfig';
 
 export const AutenticacionContext = ({ children }) => {
     const [usuarioActual, setUsuarioActual] = useState(null);
     const [carga, setCarga] = useState(true);
 
     useEffect(() => {
-        const usuario = db.getUsuarioIniciado();
-        setUsuarioActual(usuario);
+        const token = localStorage.getItem('token');
+        if (token) {
+            setUsuarioActual({ token });
+        }
         setCarga(false);
     }, []);
 
-    const registroInicio = (datosUsuario, esAdmin) => {
+    const registroInicio = async (datosUsuario, datosDireccion) => {
         try {
-            if (!esAdmin) {
-                const nuevoUsuario = db.registrarUsuario(datosUsuario);
+            const registro = await api.post('/auth/registro', datosUsuario);
+            const { token } = registro.data;
+            localStorage.setItem('token', token);
+            setUsuarioActual({ token });
+            if (datosDireccion && datosDireccion.calle) {
 
-                setUsuarioActual(nuevoUsuario);
-                return nuevoUsuario;
-
+                // INTENTO 1: Usar axios puro (sin interceptores) para esta llamada específica
+                // Importa axios directamente arriba: import axios from 'axios';
+                await axios.post('http://localhost:8080/direcciones', datosDireccion, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
             }
-            db.registrarUsuario(datosUsuario);
 
+            return true;
         } catch (error) {
-
-            setUsuarioActual(null);
-            throw error;
+            console.error("Error en registro:", error);
+            throw error.response?.data || "Error al registrar";
         }
     };
 
-    const login = (correo, contraseña) => {
+    const login = async (email, password) => {
         try {
-            const usuario = db.login(correo, contraseña);
-            setUsuarioActual(usuario);
-            return usuario; // Devuelve el usuario si el login es exitoso
+            const res = await api.post('/auth/login', { email, password });
+            localStorage.setItem('token', res.data.token);
+            setUsuarioActual({ token: res.data.token });
         } catch (error) {
-            setUsuarioActual(null);
-            throw error;
+            throw error.response?.data || "Error de credenciales";
         }
     };
 
     const logout = () => {
-        db.logout();
+        localStorage.removeItem('token');
         setUsuarioActual(null);
     };
 

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import '../../assets/estilos/header/navbar.css'
 import { Link } from 'react-router-dom'
-import db from '../../servicios/Database';
+import api from '../../api/axiosConfig';
 export default function NavBar2() {
     const [categorias, setCategorias] = useState([]);
 
     useEffect(() => {
-        try {
-            const categoriasObtenidas = db.obtenerCategorias();
-            setCategorias(categoriasObtenidas);
-        } catch (error) {
-            console.error("Error al cargar categorías para el Navbar:", error);
+        const cargarCategorias = async () => {
+            try{
+                const categoriasCargadas = await api.get('/categorias')
+                setCategorias(categoriasCargadas.data)
+            } catch(e){
+                console.error("Error al cargar las categorias " + e)
+            }
         }
+        cargarCategorias()
     }, []);
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary d-none d-lg-block">
