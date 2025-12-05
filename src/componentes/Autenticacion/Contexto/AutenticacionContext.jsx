@@ -6,32 +6,35 @@ export const AutenticacionContext = ({ children }) => {
     const [usuarioActual, setUsuarioActual] = useState(null);
     const [carga, setCarga] = useState(true);
 
+
+    const cargarDatosUsuario = async (token) => {
+        try {
+            const respuesta = await api.get('/usuarios/perfil');
+            setUsuarioActual({ token, ...respuesta.data });
+        } catch (error) {
+            console.error("Error cargando perfil:", error);
+            logout();
+        } finally {
+            setCarga(false);
+        }
+    };
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            setUsuarioActual({ token });
+            cargarDatosUsuario(token);
+        } else {
+            setCarga(false);
         }
-        setCarga(false);
     }, []);
 
-    const registroInicio = async (datosUsuario, datosDireccion) => {
+    const registroInicio = async (datosUsuario) => {
         try {
             const registro = await api.post('/auth/registro', datosUsuario);
             const { token } = registro.data;
             localStorage.setItem('token', token);
-            setUsuarioActual({ token });
-            if (datosDireccion && datosDireccion.calle) {
-
-                // INTENTO 1: Usar axios puro (sin interceptores) para esta llamada específica
-                // Importa axios directamente arriba: import axios from 'axios';
-                await axios.post('http://localhost:8080/direcciones', datosDireccion, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-
+            await cargarDatosUsuario(token);
+            
             return true;
         } catch (error) {
             console.error("Error en registro:", error);
@@ -42,9 +45,11 @@ export const AutenticacionContext = ({ children }) => {
     const login = async (email, password) => {
         try {
             const res = await api.post('/auth/login', { email, password });
-            localStorage.setItem('token', res.data.token);
-            setUsuarioActual({ token: res.data.token });
+            const token = res.data.token
+            localStorage.setItem('token',token);
+            await cargarDatosUsuario(token);
         } catch (error) {
+            console.error(error)
             throw error.response?.data || "Error de credenciales";
         }
     };
@@ -56,6 +61,7 @@ export const AutenticacionContext = ({ children }) => {
 
     const valores = {
         usuarioActual,
+        setUsuarioActual,
         carga,
         login,
         logout,

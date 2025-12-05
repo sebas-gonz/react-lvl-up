@@ -6,12 +6,13 @@ import { Outlet } from 'react-router-dom'
 export default function AdminLayout() {
     return (
         <>
-            <AdminHeader>
-            </AdminHeader>
-            <div className='container-fluid"'>
-                <div className='row'>
-                    <AdminSideBar></AdminSideBar>
-                    <Outlet></Outlet>
+            <AdminHeader />
+            <div className="container-fluid">
+                <div className="row">
+                    <AdminSideBar />
+                    <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                        <Outlet />
+                    </main>
                 </div>
             </div>
         </>

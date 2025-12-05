@@ -1,11 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { usarCarrito } from '../../hooks/CarritoContext';
 
 export default function ProductoCard({ producto }) {
     const formatoChile = (precio) => {
 
         return typeof precio === 'number' ? `$${precio.toLocaleString('es-CL')}` : 'Precio no disponible';
     };
+
+    const { agregarAlCarrito } = usarCarrito()
 
     const productoId = producto.productoId;
     const nombre = producto.nombreProducto;
@@ -20,13 +23,13 @@ export default function ProductoCard({ producto }) {
                 </Link>
                 <div className="d-flex flex-column mb-3 mt-auto">
                     {producto.precioOferta !== null && producto.precioOferta < precio && (
-                        
+
                         <span className=" text-decoration-line-through small text-danger">
                             {formatoChile(precio)}
                         </span>
                     )}
                     <span className="fw-bolder text-warning fs-5">
-                        
+
                         {producto.precioOferta !== null && producto.precioOferta < precio
                             ? formatoChile(producto.precioOferta)
                             : formatoChile(precio)}
@@ -34,6 +37,13 @@ export default function ProductoCard({ producto }) {
                 </div>
                 <div className="d-grid">
                     <Link className="btn btn-dark" to={`/productos/${productoId}`}>Ver</Link>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => agregarAlCarrito(producto)}
+                    >
+                        <i className="bi bi-cart-plus me-2"></i>
+                        Agregar
+                    </button>
                 </div>
             </div>
         </div>

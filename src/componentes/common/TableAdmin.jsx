@@ -8,7 +8,7 @@ export default function TableAdmin({ columnas, datos }) {
     }
 
     return (
-        <table className="table table-striped table-sm table-hover">
+        <table className="table table-sm table-hover">
             <thead>
                 <tr>
                     {columnas.map((columna) => (

@@ -1,18 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import OrdenCard from '../common/OrdenCard'
 import { usarAuth } from '../../hooks/usarAuth';
-import { useNavigate, Link } from 'react-router-dom';
-import db from '../../servicios/Database';
-import { getComunasPorRegion, getRegiones } from '../../utils/ubicaciones';
+import { useNavigate } from 'react-router-dom';
+import { usarCarrito } from '../../hooks/CarritoContext';
+import api from '../../api/axiosConfig';
+
 export default function Orden() {
     const { usuarioActual } = usarAuth();
     const navigate = useNavigate();
-
+    const { carrito, vaciarCarrito } = usarCarrito();
     const [itemsCarrito, setItemsCarrito] = useState([]);
+    const [direccionesGuardadas, setDireccionesGuardadas] = useState([]);
+
+    const ordenEnviada = useRef(false);
+
     const [formData, setFormData] = useState({
-        nombre: '', apellido: '', correo: '', direccion: '',
-        numeroDepartamento: '', region: '', comuna: '', indicacion: ''
+        nombre: '', apellido: '', correo: '',
+        direccion: '', numeroDepartamento: '',
+        region: '', comuna: '', indicaciones: ''
     });
+
     const [regiones, setRegiones] = useState([]);
     const [comunas, setComunas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,60 +29,51 @@ export default function Orden() {
 
     useEffect(() => {
         setLoading(true);
-        setErrorCarga(null);
-        setFormErrores({});
-
         if (!usuarioActual) {
             navigate('/login');
             return;
         }
 
-        try {
-            const items = db.obtenerCarritoUsuario(usuarioActual.usuarioId);
-            if (items.length === 0) {
-                navigate('/carrito');
-                return;
-            }
-            const itemsInicializados = items.map(item => {
-                const producto = db.obtenerProductoPorId(item.productoId);
-                return {
-                    carroId: item.carroId,
+        if (carrito.length === 0 && !ordenEnviada.current) {
+            navigate('/carrito');
+            return;
+        }
+
+        const cargarDatos = async () => {
+            try {
+                const items = carrito.map(item => ({
                     productoId: item.productoId,
                     cantidad: item.cantidad,
-                    subTotal: item.subTotal,
-                    precioUnitarioAlAgregar: item.precioUnitarioAlAgregar,
-                    nombreProducto: producto ? producto.nombreProducto : 'N/A',
-                    imagenProducto: producto ? producto.imagenesProducto : null
-                };
-            });
+                    subTotal: (item.oferta ? item.precioOferta : item.precio) * item.cantidad,
+                    precioUnitario: item.oferta ? item.precioOferta : item.precio,
+                    nombreProducto: item.nombreProducto,
+                    imagenProducto: item.imagenProducto
+                }));
+                setItemsCarrito(items);
 
-            setItemsCarrito(itemsInicializados);
+                const reg = await api.get('/regiones')
+                setRegiones(reg.data)
 
-            setFormData({
-                nombre: usuarioActual.nombre || '',
-                apellido: usuarioActual.apellido || '',
-                correo: usuarioActual.correo || '',
-                direccion: usuarioActual.direccion || '',
-                region: usuarioActual.region || '',
-                comuna: usuarioActual.comuna || '',
-                numeroDepartamento: '',
-                indicacion: ''
-            });
+                setFormData(prev => ({
+                    ...prev,
+                    nombre: usuarioActual.nombre || '',
+                    apellido: usuarioActual.apellido || '',
+                    correo: usuarioActual.email || ''
+                }));
 
-            setRegiones(getRegiones());
-            if (usuarioActual.region) {
-                setComunas(getComunasPorRegion(usuarioActual.region));
-            } else {
-                setComunas([]);
+                const dir = await api.get('/direcciones');
+                setDireccionesGuardadas(dir.data);
+
+            } catch (err) {
+                console.error("Error cargando datos:", err);
+                setErrorCarga("Error al cargar información.");
+            } finally {
+                setLoading(false);
             }
+        };
 
-        } catch (err) {
-            console.error("Error al cargar datos de orden:", err);
-            setErrorCarga("No se pudo cargar la información para la orden.");
-        } finally {
-            setLoading(false);
-        }
-    }, [usuarioActual, navigate]);
+        cargarDatos();
+    }, [usuarioActual, navigate, carrito]);
 
     const totalCarrito = useMemo(() => {
         return itemsCarrito.reduce((total, item) => total + item.subTotal, 0);
@@ -84,56 +82,102 @@ export default function Orden() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        if (formErrores[name]) {
-            setFormErrores(prev => ({ ...prev, [name]: undefined }));
+        if (formErrores[name]) setFormErrores(prev => ({ ...prev, [name]: undefined }));
+    };
+
+    const handleDireccionGuardadaChange = async (e) => {
+        const indice = e.target.value;
+
+        const direccionSelec = direccionesGuardadas[parseInt(indice)];
+
+        if (direccionSelec) {
+            setFormData(prev => ({
+                ...prev,
+                direccion: direccionSelec.calle,
+                numeroDepartamento: direccionSelec.numeroDepto,
+                indicaciones: direccionSelec.indicaciones,
+                region: '',
+                comuna: ''
+            }));
+
+            if (direccionSelec.comuna) {
+                try {
+                    const respComuna = await api.get(`/comunas/${direccionSelec.comuna}`);
+                    let regionId = null;
+                    if (respComuna && respComuna.data) {
+                        regionId = respComuna.data.regionId;
+                    }
+                    if (regionId) {
+                        const respComunasRegion = await api.get('/comunas/region/' + regionId);
+                        setComunas(respComunasRegion.data);
+                        setFormData(prev => ({
+                            ...prev,
+                            region: regionId,
+                            comuna: direccionSelec.comuna
+                        }));
+                    } else {
+                        setFormData(prev => ({ ...prev, comuna: direccionSelec.comuna }));
+                    }
+
+                } catch (error) {
+                    console.error("No se pudo cargar la geolocalización automática:", error);
+                    setFormData(prev => ({ ...prev, comuna: direccionSelec.comuna }));
+                }
+            }
+        }
+    };
+    const handleRegionChange = async (e) => {
+        const regionSeleccionada = e.target.value;
+        setFormData(prev => ({ ...prev, region: regionSeleccionada, comuna: '' }));
+        try {
+            const response = await api.get('/comunas/region/' + regionSeleccionada);
+            setComunas(response.data);
+        } catch (error) {
+            setComunas([]);
         }
     };
 
-    const handleRegionChange = (e) => {
-        const regionSeleccionada = e.target.value;
-        setFormData(prev => ({ ...prev, region: regionSeleccionada, comuna: '' }));
-        setComunas(getComunasPorRegion(regionSeleccionada));
-        if (formErrores.region) setFormErrores(prev => ({ ...prev, region: undefined }));
-        if (formErrores.comuna) setFormErrores(prev => ({ ...prev, comuna: undefined }));
-    };
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorSubmit(null);
-        setFormErrores({});
 
-        let erroresValidacion = {};
-        if (!formData.nombre.trim()) erroresValidacion.nombre = "Nombre requerido.";
-        if (!formData.apellido.trim()) erroresValidacion.apellido = "Apellido requerido.";
-        if (!formData.correo.trim()) erroresValidacion.correo = "Correo requerido.";
-        if (!formData.direccion.trim()) erroresValidacion.direccion = "Dirección requerida.";
-        if (!formData.region) erroresValidacion.region = "Región requerida.";
-        if (!formData.comuna) erroresValidacion.comuna = "Comuna requerida.";
+        let errores = {};
+        if (!formData.direccion || formData.direccion.length < 10) errores.direccion = "La dirección debe tener al menos 10 caracteres.";
+        if (!formData.comuna) errores.comuna = "Comuna requerida.";
 
-        if (Object.keys(erroresValidacion).length > 0) {
-            setFormErrores(erroresValidacion);
+        if (Object.keys(errores).length > 0) {
+            setFormErrores(errores);
             return;
         }
 
         try {
-            const carritosOriginales = db.obtenerCarritoUsuario(usuarioActual.usuarioId);
-            const nuevaOrden = db.crearOrden({
-                usuario: usuarioActual,
-                carritos: carritosOriginales,
-                numeroDepartamento: formData.numeroDepartamento.trim(),
-                indicacion: formData.indicacion.trim()
-            });
-            navigate(`/orden-confirmada/${nuevaOrden.ordenId}`);
+            const boletaDTO = {
+                totalBoleta: totalCarrito,
+                calle: formData.direccion,
+                numeroDepto: formData.numeroDepartamento ? parseInt(formData.numeroDepartamento) : null,
+                indicaciones: formData.indicaciones,
+                comuna: formData.comuna,
+                detalles: itemsCarrito.map(item => ({
+                    productoId: item.productoId,
+                    cantidad: item.cantidad,
+                    subTotal: item.subTotal
+                }))
+            };
+            const response = await api.post('/boletas', boletaDTO);
+            ordenEnviada.current = true;
+
+            vaciarCarrito();
+            navigate(`/orden-confirmada/${response.data.boletaId}`);
 
         } catch (error) {
-            console.error("Error al crear la orden:", error);
-            setErrorSubmit(`Error al procesar la orden: ${error.message}`);
+            console.error("Error creando boleta:", error);
+            setErrorSubmit("Error al procesar la compra. Intente nuevamente.");
+            ordenEnviada.current = false
         }
     };
 
+    if (loading) return <div className="text-center py-5">Cargando...</div>;
 
-    if (loading) return <p className="text-center my-5">Cargando orden...</p>;
-    if (errorCarga) return <div className="container my-5 alert alert-danger">{errorCarga}</div>;
     return (
         <div className="container my-5">
             <div className="row justify-content-center">
@@ -145,10 +189,13 @@ export default function Orden() {
                             formData={formData}
                             handleChange={handleChange}
                             handleRegionChange={handleRegionChange}
+                            handleDireccionGuardadaChange={handleDireccionGuardadaChange}
+                            direccionesGuardadas={direccionesGuardadas}
                             regiones={regiones}
                             comunas={comunas}
                             erroresFormulario={formErrores}
                         />
+
                         {errorSubmit && <div className="alert alert-danger mt-3">{errorSubmit}</div>}
 
                         <div className="text-end mt-4">
@@ -156,7 +203,7 @@ export default function Orden() {
                                 type="submit"
                                 className="btn btn-success btn-lg"
                                 disabled={itemsCarrito.length === 0}>
-                                Pagar ahora ({formatoChile(totalCarrito)})
+                                Pagar ahora (${totalCarrito.toLocaleString('es-CL')})
                             </button>
                         </div>
                     </form>
@@ -165,4 +212,3 @@ export default function Orden() {
         </div>
     )
 }
-const formatoChile = (valor) => `$${valor.toLocaleString('es-CL')}`;

@@ -8,6 +8,8 @@ export default function OrdenCard({
     formData,
     handleChange,
     handleRegionChange,
+    handleDireccionGuardadaChange, 
+    direccionesGuardadas,
     regiones,
     comunas,
     erroresFormulario
@@ -20,6 +22,8 @@ export default function OrdenCard({
                     formData={formData} 
                     handleChange={handleChange} 
                     handleRegionChange={handleRegionChange}
+                    handleDireccionGuardadaChange={handleDireccionGuardadaChange}
+                    direccionesGuardadas={direccionesGuardadas}
                     regiones={regiones}
                     comunas={comunas}
                     errores={erroresFormulario}

@@ -4,7 +4,8 @@ export default function OrdenCompletadoCard({ orden }) {
 
     const formatoChile = (valor) => `$${valor.toLocaleString('es-CL')}`
 
-    const nombreCliente = orden.nombreCliente || `${orden.nombre || ''} ${orden.apellido || ''}`;
+    const nombreCliente = `${orden.nombre}`;
+    const apellidoCliente = `${orden.apellido}`
     const correoCliente = orden.correo || 'No disponible';
     const direccionCompleta = `${orden.direccion || ''}${orden.numeroDepartamento ? `, Depto ${orden.numeroDepartamento}` : ''}`;
     const regionCliente = orden.region || 'No disponible';
@@ -16,7 +17,7 @@ export default function OrdenCompletadoCard({ orden }) {
     return (
         <>
             <div className="row my-3">
-                <div className="card mb-3">
+                <div className="card mb-3 text-dark">
                     <div className="card-body row">
 
                         <div className="col-3 col-md-4 mb-3">
@@ -29,7 +30,7 @@ export default function OrdenCompletadoCard({ orden }) {
                             <label htmlFor="apellidos" className="form-label">Apellidos<small
                                 className="text-danger">*</small></label>
                             <input type="text" className="form-control" id="apellidos"
-                                value="hacker" disabled readOnly name="apellidos"
+                                value={apellidoCliente} disabled readOnly name="apellidos"
                                 required />
                         </div>
 
@@ -102,7 +103,7 @@ export default function OrdenCompletadoCard({ orden }) {
                                             <tr key={item.carroId || item.productoId || index}>
                                                 <td>
                                                     <img
-                                                        
+
                                                         src={item.imagenProducto}
                                                         alt={item.nombreProducto}
                                                         style={{ width: "50px", height: "auto", objectFit: 'contain' }}
@@ -123,10 +124,15 @@ export default function OrdenCompletadoCard({ orden }) {
                     </div>
                 </div>
             </div>
-            <div className="text-center mb-3">
-                <div className="card bg-white">
-                    <div className="card-body">
-                        <h4>Total pagado: {formatoChile(totalOrden)}</h4>
+            <div className="row justify-content-center mb-4">
+                <div className="col-md-6">
+                    <div className="card bg-success text-white shadow">
+                        <div className="card-body py-3">
+                            <h4 className="m-0 d-flex justify-content-between px-3">
+                                <span>Total Pagado:</span>
+                                <span className="fw-bold">{formatoChile(totalOrden)}</span>
+                            </h4>
+                        </div>
                     </div>
                 </div>
             </div>

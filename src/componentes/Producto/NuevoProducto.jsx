@@ -7,7 +7,6 @@ export default function NuevoProducto() {
     const productosNavLinks = [
         {to: '/admin/productos', text : 'Listado de productos'},
         {to: '/admin/productos/criticos', text : 'Productos criticos'},
-        {to: '/admin/productos/tarjetas', text : 'Formato tarjeta'},
         {to: '/admin/productos/nuevo', text : 'Nuevo producto'}
     ]
   return (

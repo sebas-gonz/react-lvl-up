@@ -5,7 +5,7 @@ export default function ProductoCarritoCard({producto, onAgregar}) {
     if (!producto) return null;
     const id = producto.productoId;
     const nombre = producto.nombreProducto;
-    const imagen = producto.imagenesProducto; 
+    const imagen = producto.imagenProducto; 
     const precio = producto.precioProducto;
 
     const formatoChile = (valor) => typeof valor === 'number' ? `$${valor.toLocaleString('es-CL')}` : '';

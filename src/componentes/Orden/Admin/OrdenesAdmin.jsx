@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import TableCardAdmin from '../../common/TableCardAdmin'
 import { Link } from 'react-router-dom';
-import db from '../../../servicios/Database';
 import MainProductosAdmin from '../../main/MainProductosAdmin';
+import api from '../../../api/axiosConfig';
 export default function OrdenesAdmin() {
     const [ordenes, setOrdenes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10,15 +10,26 @@ export default function OrdenesAdmin() {
     const formatoChile = (valor) => `$${valor.toLocaleString('es-CL')}`
 
     useEffect(() => {
-        setLoading(true);
-        try {
-            const ordenes = db.obtenerOrdenes()
-            setOrdenes(ordenes);
-        } catch (error) {
-            console.error("Error al obtener órdenes:", error);
-        } finally {
-            setLoading(false);
-        }
+        const fetchOrdenes = async () => {
+            setLoading(true);
+            try {
+                const response = await api.get('/boletas');
+                const ordenesAdaptadas = response.data.map(boleta => ({
+                    ordenId: boleta.boletaId,
+                    createdAt: boleta.createdAt,
+                    total: boleta.totalBoleta,
+                    comuna: boleta.comuna, 
+                }));
+
+                setOrdenes(ordenesAdaptadas);
+            } catch (error) {
+                console.error("Error al obtener órdenes:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrdenes();
     }, []);
 
     const columnasConfigOrdenes = [

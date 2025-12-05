@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { usarAuth } from '../../hooks/usarAuth'
-import api from '../../api/axiosConfig'
+import { useNavigate, useParams } from 'react-router-dom'
+import {usarAuth} from '../../hooks/usarAuth'
+import api from '../../api/axiosConfig';
 
-export default function NuevoProductoCard() {
+export default function EditarProductoCard() {
 
+    const { productoId } = useParams(); 
     const navigate = useNavigate()
     const { usuarioActual } = usarAuth()
+
     const CLOUD_NAME = 'dsfuxaywv';
     const UPLOAD_PRESET = 'lvl-up';
 
@@ -27,19 +29,40 @@ export default function NuevoProductoCard() {
     const [exito, setExito] = useState('');
     const [subiendoImg, setSubiendoImg] = useState(false);
     const [enviando, setEnviando] = useState(false);
+    const [cargandoDatos, setCargandoDatos] = useState(true);
 
     useEffect(() => {
-        const cargarCategorias = async () => {
+        const cargarDatosIniciales = async () => {
+            setCargandoDatos(true);
             try {
                 const cat = await api.get('/categorias');
                 setCategorias(cat.data);
+
+                if (productoId) {
+                    const resProd = await api.get(`/productos/${productoId}`);
+                    const producto = resProd.data;
+
+                    setFormData({
+                        nombreProducto: producto.nombreProducto,
+                        descripcionProducto: producto.descripcionProducto,
+                        precio: producto.precio,
+                        precioOferta: producto.precioOferta || '',
+                        oferta: producto.oferta,
+                        stockProducto: producto.stock,
+                        stockMinimo: producto.stockMinimo,
+                        categoriaId: producto.categoria?.categoriaId || '',
+                        imagenProducto: producto.imagenProducto
+                    });
+                }
             } catch (error) {
-                console.error("Error al cargar categorías:", error);
-                setErrores(prev => ({ ...prev, general: "No se pudieron cargar las categorías." }));
+                console.error("Error cargando datos:", error);
+                setErrores({ general: "Error al cargar la información del producto." });
+            } finally {
+                setCargandoDatos(false);
             }
         };
-        cargarCategorias();
-    }, [])
+        cargarDatosIniciales();
+    }, [productoId]);
 
     const handleOfertaChange = (e) => {
         const estaEnOferta = e.target.checked;
@@ -52,10 +75,7 @@ export default function NuevoProductoCard() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleCategoriasChange = (e) => {
@@ -83,11 +103,11 @@ export default function NuevoProductoCard() {
             if (data.secure_url) {
                 setFormData(prev => ({ ...prev, imagenProducto: data.secure_url }));
             } else {
-                setErrores(prev => ({ ...prev, imagenProducto: 'Error al subir imagen a la nube.' }));
+                setErrores(prev => ({ ...prev, imagenProducto: 'Error al subir imagen a Cloudinary.' }));
             }
         } catch (error) {
-            console.error("Error subiendo a Cloudinary", error);
-            setErrores(prev => ({ ...prev, imagenProducto: 'Error de conexión al subir imagen.' }));
+            console.error("Error Cloudinary", error);
+            setErrores(prev => ({ ...prev, imagenProducto: 'Error de conexión.' }));
         } finally {
             setSubiendoImg(false);
         }
@@ -104,101 +124,93 @@ export default function NuevoProductoCard() {
         const stockMinimo = parseInt(formData.stockMinimo, 10);
 
         const nuevosErrores = {};
-        if (usuarioActual?.rol !== 'ROLE_ADMIN') {
-            nuevosErrores.general = 'No tienes permisos de administrador.';
-        }
-
-        if (!formData.nombreProducto.trim()) nuevosErrores.nombreProducto = 'El nombre es obligatorio.';
-        if (!formData.descripcionProducto.trim()) nuevosErrores.descripcionProducto = 'La descripción es obligatoria.';
+        if (usuarioActual.rol !== 'ROLE_ADMIN') nuevosErrores.general = 'No tienes permisos.';
+        if (!formData.nombreProducto.trim()) nuevosErrores.nombreProducto = 'Nombre requerido.';
+        if (!formData.descripcionProducto.trim()) nuevosErrores.descripcionProducto = 'Descripción requerida.';
         if (isNaN(precio) || precio < 0) nuevosErrores.precio = 'Precio inválido.';
-
-        if (formData.oferta) {
-            if (isNaN(precioOferta) || precioOferta < 0) nuevosErrores.precioOferta = 'Precio oferta inválido.';
-            else if (precioOferta >= precio) nuevosErrores.precioOferta = 'La oferta debe ser menor al precio normal.';
+        if (formData.oferta && (isNaN(precioOferta) || precioOferta < 0 || precioOferta >= precio)) {
+            nuevosErrores.precioOferta = 'Precio oferta inválido.';
         }
-
         if (isNaN(stock) || stock < 0) nuevosErrores.stockProducto = 'Stock inválido.';
         if (isNaN(stockMinimo) || stockMinimo < 0) nuevosErrores.stockMinimo = 'Stock mínimo inválido.';
-        if (!formData.categoriaId) nuevosErrores.categoriaId = 'Seleccione una categoría.';
-        if (!formData.imagenProducto) nuevosErrores.imagenProducto = 'Debe subir una imagen.';
+        if (!formData.categoriaId) nuevosErrores.categoriaId = 'Seleccione categoría.';
+        if (!formData.imagenProducto) nuevosErrores.imagenProducto = 'Imagen requerida.';
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErrores(nuevosErrores);
             return;
         }
+
         setEnviando(true);
+
         try {
+
             const datosProductoDTO = {
-                nombre: formData.nombreProducto,          
+                nombre: formData.nombreProducto,
                 descripcion: formData.descripcionProducto,
-                precio: precio,                          
-                stock: stock,                            
-                oferta: formData.oferta,                 
-                precioOferta: formData.oferta ? precioOferta : null, 
-                imagenUrl: formData.imagenProducto,       
-                stockMinimo: stockMinimo,                 
-                categoriaId: parseInt(formData.categoriaId, 10) 
+                precio: precio,
+                stock: stock,
+                oferta: formData.oferta,
+                precioOferta: formData.oferta ? precioOferta : null,
+                imagenUrl: formData.imagenProducto,
+                stockMinimo: stockMinimo,
+                categoriaId: parseInt(formData.categoriaId, 10)
             };
-            await api.post('/productos', datosProductoDTO);
 
-            setExito('¡Producto agregado exitosamente!');
-
-            setFormData({
-                nombreProducto: '', descripcionProducto: '', precio
-                    : '', precioOferta: '',
-                oferta: false, stockProducto: '', stockMinimo
-                    : '', categoriaId: '',
-                imagenProducto: null
-            });
+            await api.put(`/productos/${productoId}`, datosProductoDTO);
+            setExito('¡Producto actualizado exitosamente!');
 
             setTimeout(() => {
                 navigate('/admin/productos');
             }, 1500);
 
         } catch (error) {
-            console.error("Error al guardar producto:", error);
-            setErrores({ general: `Error del servidor: ${error.response?.data?.message || error.message}` });
+            console.error("Error al actualizar:", error);
+            setErrores({ general: `Error: ${error.response?.data?.message || error.message}` });
         } finally {
             setEnviando(false);
         }
     }
 
+    if (cargandoDatos) return <div className="text-center p-5"><div className="spinner-border text-primary"></div></div>;
 
     return (
         <div className="card text-start shadow-sm border-0">
+            <div className="card-header bg-warning text-dark fw-bold">
+                <i className="bi bi-pencil-square me-2"></i> Editando Producto #{productoId}
+            </div>
             <div className="card-body">
                 {errores.general && <div className="alert alert-danger">{errores.general}</div>}
                 {exito && <div className="alert alert-success">{exito}</div>}
 
                 <form onSubmit={handleSubmit}>
-
                     <div className="mb-3">
-                        <label htmlFor="nombreProducto" className="form-label fw-bold">Producto<small className="text-danger">*</small></label>
+                        <label className="form-label fw-bold">Producto<small className="text-danger">*</small></label>
                         <input type="text" className={`form-control ${errores.nombreProducto ? 'is-invalid' : ''}`}
-                            name='nombreProducto' value={formData.nombreProducto} onChange={handleChange} placeholder="Ej: FIFA 25" />
+                            name='nombreProducto' value={formData.nombreProducto} onChange={handleChange} />
                         {errores.nombreProducto && <div className="invalid-feedback">{errores.nombreProducto}</div>}
                     </div>
 
                     <div className="mb-3">
-                        <label htmlFor="descripcion" className="form-label fw-bold">Descripción<small className="text-danger">*</small></label>
+                        <label className="form-label fw-bold">Descripción<small className="text-danger">*</small></label>
                         <textarea className={`form-control ${errores.descripcionProducto ? 'is-invalid' : ''}`}
-                            name='descripcionProducto' value={formData.descripcionProducto} onChange={handleChange} rows="3" placeholder="Detalles del producto..."></textarea>
+                            name='descripcionProducto' value={formData.descripcionProducto} onChange={handleChange} rows="3"></textarea>
                         {errores.descripcionProducto && <div className="invalid-feedback">{errores.descripcionProducto}</div>}
                     </div>
 
                     <div className="row">
                         <div className="mb-3 col-md-4">
-                            <label className="form-label fw-bold" htmlFor='precio'>Precio<small className="text-danger">*</small></label>
-                            <input type="number" className={`form-control ${errores.precio ? 'is-invalid' : ''}`} 
-                                name='precio' value={formData.precio} onChange={handleChange} placeholder="9990" />
+                            <label className="form-label fw-bold">Precio<small className="text-danger">*</small></label>
+                            <input type="number" className={`form-control ${errores.precio ? 'is-invalid' : ''}`}
+                                name='precio' value={formData.precio} onChange={handleChange} />
                             {errores.precio && <div className="invalid-feedback">{errores.precio}</div>}
                         </div>
 
                         <div className="mb-3 col-md-4 d-flex align-items-end">
                             <div className="form-check form-switch mb-2">
-                                <input className="form-check-input" type="checkbox" role="switch" id="ofertaCheck"
+                                <input className="form-check-input" type="checkbox" role="switch" id="ofertaCheckEdit"
                                     name="oferta" checked={formData.oferta} onChange={handleOfertaChange} />
-                                <label className="form-check-label" htmlFor="ofertaCheck">En Oferta</label>
+                                <label className="form-check-label" htmlFor="ofertaCheckEdit">En Oferta</label>
                             </div>
                         </div>
 
@@ -206,7 +218,7 @@ export default function NuevoProductoCard() {
                             <label className="form-label fw-bold">Precio Oferta</label>
                             <input type="number" className={`form-control ${errores.precioOferta ? 'is-invalid' : ''}`}
                                 name="precioOferta" value={formData.precioOferta} onChange={handleChange}
-                                placeholder="Precio rebajado" disabled={!formData.oferta} />
+                                disabled={!formData.oferta} />
                             {errores.precioOferta && <div className="invalid-feedback">{errores.precioOferta}</div>}
                         </div>
                     </div>
@@ -220,7 +232,7 @@ export default function NuevoProductoCard() {
                         </div>
                         <div className="mb-3 col-md-4">
                             <label className="form-label fw-bold">Stock Crítico<small className="text-danger">*</small></label>
-                            <input type="number" className={`form-control ${errores.stockMinimo? 'is-invalid' : ''}`}
+                            <input type="number" className={`form-control ${errores.stockMinimo ? 'is-invalid' : ''}`}
                                 name='stockMinimo' value={formData.stockMinimo} onChange={handleChange} />
                             {errores.stockMinimo && <div className="invalid-feedback">{errores.stockMinimo}</div>}
                         </div>
@@ -236,30 +248,30 @@ export default function NuevoProductoCard() {
                             {errores.categoriaId && <div className="invalid-feedback">{errores.categoriaId}</div>}
                         </div>
                     </div>
+
                     <div className="mb-4">
-                        <label className="form-label fw-bold">Imagen del Producto<small className="text-danger">*</small></label>
+                        <label className="form-label fw-bold">Imagen del Producto</label>
                         <input type="file" className={`form-control ${errores.imagenProducto ? 'is-invalid' : ''}`}
                             onChange={handleImageChange} accept="image/*" disabled={subiendoImg} />
 
-                        {errores.imagenProducto && <div className="invalid-feedback d-block">{errores.imagenProducto}</div>}
-                        {subiendoImg && (
-                            <div className="mt-2 text-primary">
-                                <span className="spinner-border spinner-border-sm me-2"></span>
-                                Subiendo imagen a Cloudinary...
-                            </div>
-                        )}
+                        {subiendoImg && <div className="text-primary mt-2">Subiendo imagen...</div>}
+
                         {formData.imagenProducto && !subiendoImg && (
                             <div className="mt-3 p-2 border rounded bg-light text-center" style={{ maxWidth: '200px' }}>
-                                <img src={formData.imagenProducto} alt="Previsualización" className="img-fluid rounded" />
-                                <small className="d-block text-success mt-1"><i className="bi bi-check-circle"></i> Imagen cargada</small>
+                                <img src={formData.imagenProducto} alt="Actual" className="img-fluid rounded" />
+                                <small className="d-block text-secondary mt-1">Imagen Actual</small>
                             </div>
                         )}
+                        {errores.imagenProducto && <div className="invalid-feedback d-block">{errores.imagenProducto}</div>}
                     </div>
 
                     <div className="text-end">
-                        <button type="submit" className="btn btn-primary px-5"
-                            disabled={enviando || subiendoImg || usuarioActual?.rol !== 'ROLE_ADMIN'}>
-                            {enviando ? 'Guardando...' : 'Guardar Producto'}
+                        <button type="button" className="btn btn-secondary me-2" onClick={() => navigate('/admin/productos')}>
+                            Cancelar
+                        </button>
+                        <button type="submit" className="btn btn-warning px-5"
+                            disabled={enviando || subiendoImg}>
+                            {enviando ? 'Guardando...' : 'Actualizar Producto'}
                         </button>
                     </div>
                 </form>

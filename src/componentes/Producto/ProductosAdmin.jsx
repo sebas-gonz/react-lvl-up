@@ -1,93 +1,89 @@
 import React, { useState, useEffect } from 'react'
 import NavbarProductosAdmin from './NavbarProductosAdmin'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import TableCardAdmin from '../common/TableCardAdmin'
 import MainProductosAdmin from '../main/MainProductosAdmin';
-import db from '../../servicios/Database';
+import api from '../../api/axiosConfig';
+
 export default function ProductosAdmin() {
 
     const [productos, setProductos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-
-    useEffect(() => {
+    const cargarProductos = async () => {
         setLoading(true);
         try {
-            const productos = db.obtenerProductos();
-            const categorias = db.obtenerCategorias();
-            const productosParaTabla = productos.map(p => {
-                const cat = categorias.find(c => c.categoriaId === p.categoriaId);
+            const productos = await api.get('/productos');
+            const productosAdaptados = productos.data.map(p => ({
+                productoId: p.productoId,
+                imagenProducto: p.imagenProducto, 
+                nombreProducto: p.nombreProducto,
+                categoriaNombre:  p.categoria.nombreCategoria,
+                descripcionProducto: p.descripcionProducto,
+                precio: p.precio, 
+                stock: p.stock,   
+                stockMinimo: p.stockMinimo, 
+            }));
 
-                return {
-                    productoId: p.productoId,
-                    imagenesProducto: p.imagenesProducto,
-                    nombreProducto: p.nombreProducto,
-                    categoriaNombre: cat ? cat.nombreCategoria : 'Desconocida',
-                    descripcionProducto: p.descripcionProducto,
-                    precioProducto: p.precioProducto,
-                    stockProducto: p.stockProducto,
-                    stockMinimoProducto: p.stockMinimoProducto,
-                };
-            });
-
-
-            setProductos(productosParaTabla);
+            setProductos(productosAdaptados);
         } catch (error) {
-            console.error("Error al cargar productos o categorías:", error);
+            console.error("Error al cargar productos:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        cargarProductos();
     }, []);
 
+    const handleEliminar = async (id) => {
+        if (window.confirm(`¿Estás seguro de eliminar el producto con ID ${id}? Esta acción es irreversible.`)) {
+            try {
+                await api.delete(`/productos/delete/${id}`);
+                setProductos(prev => prev.filter(p => p.productoId !== id));
+                alert("Producto eliminado correctamente.");
+            } catch (error) {
+                console.error("Error eliminando:", error);
+                alert("No se pudo eliminar el producto. Verifica si tiene ventas asociadas.");
+            }
+        }
+    };
+
     const columnasConfigProductos = [
+        { header: '#', accessor: 'productoId' },
         {
-            header: '#',
-            accessor: 'productoId'
+            header: 'Imagen', accessor: 'imagenProducto',
+            render: (item) => <img src={item.imagenProducto} alt="prod" className="rounded" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
         },
         {
-            header: 'Imagen',
-            accessor: 'imagenesProducto',
-
-            render: (item) => <img src={item.imagenesProducto} alt={item.nombreProducto} style={{ width: '50px', height: 'auto' }} />
+            header: 'Producto', accessor: 'nombreProducto',
+            render: (item) => <Link to={`/admin/producto/${item.productoId}`} className="fw-bold text-decoration-none">{item.nombreProducto}</Link>
+        },
+        { header: 'Categoría', accessor: 'categoriaNombre' },
+        { 
+            header: 'Precio', accessor: 'precioProducto',
+            render: (item) => item.precio === 0 ? <span className="badge bg-success">Gratis</span> : `$${item.precio.toLocaleString('es-CL')}`
         },
         {
-            header: 'Juego',
-            accessor: 'nombreProducto',
-
-            render: (item) => <Link to={`/admin/producto/${item.productoId}`}>{item.nombreProducto}</Link>
+            header: 'Stock', accessor: 'stockProducto',
+            render: (item) => {
+                const esCritico = item.stock <= item.stockMinimo;
+                return (
+                    <span className={`badge ${item.stockProducto > 0 ? (esCritico ? 'bg-warning text-dark' : 'bg-secondary') : 'bg-danger'}`}>
+                        {item.stock} / {item.stockMinimo}
+                    </span>
+                )
+            }
         },
         {
-            header: 'Categoría',
-            accessor: 'categoriaNombre'
-        },
-        {
-            header: 'Descripción',
-            accessor: 'descripcionProducto'
-        },
-        {
-            header: 'Precio',
-            accessor: 'precioProducto',
-
-            render: (item) => item.precioProducto === 0 ? 'Gratis' : `$${item.precioProducto}`
-        },
-        {
-            header: 'Disponibilidad',
-            accessor: 'stockProducto',
-
-            render: (item) => item.stockProducto > 0 ? `${item.stockProducto}/${item.stockMinimoProducto}` : <span className="text-danger">Agotado</span>
-        },
-        {
-            header: 'Acciones',
-            accessor: 'acciones',
+            header: 'Acciones', accessor: 'acciones',
             render: (item) => (
                 <>
-                    <Link to={`/admin/producto/editar/${item.productoId}`} className="btn btn-sm btn-warning me-1">
+                    <Link to={`/admin/productos/editar/${item.productoId}`} className="btn btn-sm btn-outline-warning me-1">
                         <i className="bi bi-pencil-fill"></i>
                     </Link>
-                    <button
-                        onClick={() => handleEliminar(item.productoId)}
-                        className="btn btn-sm btn-danger"
-                    >
+                    <button onClick={() => handleEliminar(item.productoId)} className="btn btn-sm btn-outline-danger">
                         <i className="bi bi-trash-fill"></i>
                     </button>
                 </>
@@ -95,24 +91,20 @@ export default function ProductosAdmin() {
         }
     ];
 
-    const handleEliminar = (id) => {
-        if (window.confirm(`¿Estás seguro de eliminar el producto con ID ${id}?`)) {
-            console.log("Eliminando producto:", id);
-
-        }
-    };
-
-    if (loading) return <p>Cargando productos...</p>;
-
     const productosNavLinks = [
         { to: '/admin/productos', text: 'Listado de productos' },
         { to: '/admin/productos/criticos', text: 'Productos criticos' },
-        { to: '/admin/productos/tarjetas', text: 'Formato tarjeta' },
         { to: '/admin/productos/nuevo', text: 'Nuevo producto' }
     ]
 
+    if (loading) return (
+        <MainProductosAdmin tituloText='Productos' parrafoText='Cargando inventario...'>
+            <div className="text-center my-5"><div className="spinner-border text-primary"></div></div>
+        </MainProductosAdmin>
+    );
+
     return (
-        <MainProductosAdmin tituloText='Productos' parrafoText='Listado de productos criticos'>
+        <MainProductosAdmin tituloText='Productos' parrafoText='Gestión del inventario general'>
             <NavbarProductosAdmin links={productosNavLinks}></NavbarProductosAdmin>
             <TableCardAdmin columnas={columnasConfigProductos} datos={productos} />
         </MainProductosAdmin>

@@ -1,57 +1,68 @@
 import React from 'react'
 
-export default function OrdenFormulario({ formData, handleChange, handleRegionChange, regiones = [], comunas = [], errores = {} }) {
+export default function OrdenFormulario({
+    formData,
+    handleChange,
+    handleRegionChange,
+    handleDireccionGuardadaChange,
+    direccionesGuardadas = [],
+    regiones = [],
+    comunas = [],
+    errores = {}
+}) {
     return (
         <>
             <hr className="my-4" />
             <h4 className="card-title">Información del cliente</h4>
-            <p className="card-text text-muted">Confirma o actualiza tus datos.</p>
             <div className="row">
                 <div className="col-md-6 mb-3">
-                    <label htmlFor="nombre" className="form-label">Nombre<small className="text-danger">*</small></label>
-                    <input
-                        type="text"
-                        className={`form-control ${errores.nombre ? 'is-invalid' : ''}`}
-                        id="nombre"
-                        name="nombre"
-                        value={formData.nombre || ''}
-                        onChange={handleChange}
-                        required
-                    />
-                    {errores.nombre && <div className="invalid-feedback">{errores.nombre}</div>}
+                    <label className="form-label">Nombre</label>
+                    <input type="text" className="form-control" value={formData.nombre} disabled readOnly />
                 </div>
                 <div className="col-md-6 mb-3">
-                    <label htmlFor="apellido" className="form-label">Apellidos<small className="text-danger">*</small></label>
-
-                    <input
-                        type="text"
-                        className={`form-control ${errores.apellido ? 'is-invalid' : ''}`}
-                        id="apellido"
-                        name="apellido"
-                        value={formData.apellido || ''}
-                        onChange={handleChange}
-                        required
-                    />
-                    {errores.apellido && <div className="invalid-feedback">{errores.apellido}</div>}
-                </div>
-                <div className="col-12 mb-3">
-                    <label htmlFor="correo" className="form-label">Correo<small className="text-danger">*</small></label>
-                    <input
-                        type="email"
-                        className={`form-control ${errores.correo ? 'is-invalid' : ''}`}
-                        id="correo"
-                        name="correo"
-                        value={formData.correo || ''}
-                        onChange={handleChange}
-                        required
-                    />
-                    {errores.correo && <div className="invalid-feedback">{errores.correo}</div>}
+                    <label className="form-label">Correo</label>
+                    <input type="email" className="form-control" value={formData.correo} disabled readOnly />
                 </div>
             </div>
 
             <hr className="my-4" />
-            <h4 className="card-title">Dirección de entrega</h4>
-            <p className="card-text text-muted">Confirma o actualiza tu dirección.</p>
+
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="card-title mb-0">Dirección de entrega</h4>
+            </div>
+
+            <div className="mb-4 p-3 bg-light rounded border">
+                {direccionesGuardadas && direccionesGuardadas.length > 0 ? (
+                    <>
+                        <label htmlFor="direccionesGuardadas" className="form-label fw-bold text-primary">
+                            <i className="bi bi-geo-alt-fill me-2"></i>Usar una dirección guardada:
+                        </label>
+                        <select
+                            className="form-select mt-2"
+                            id="direccionesGuardadas"
+                            onChange={handleDireccionGuardadaChange}
+                            defaultValue=""
+                        >
+                            <option value="" disabled>-- Selecciona para autocompletar --</option>
+                            {direccionesGuardadas.map((dir, index) => (
+                                <option key={index} value={index}>
+                                    {dir.calle} {dir.numeroDepto}
+                                </option>
+                            ))}
+                        </select>
+                    </>
+                ) : (
+                    <div className="text-muted d-flex align-items-center">
+                        <i className="bi bi-info-circle-fill me-2 fs-5"></i>
+                        <div>
+                            <strong>No tienes direcciones guardadas.</strong>
+                            <br />
+                            <small>Ingresa tu dirección manualmente en el formulario de abajo.</small>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             <div className="row">
                 <div className="col-md-6 mb-3">
                     <label htmlFor="direccion" className="form-label">Calle y Número<small className="text-danger">*</small></label>
@@ -63,14 +74,15 @@ export default function OrdenFormulario({ formData, handleChange, handleRegionCh
                         value={formData.direccion || ''}
                         onChange={handleChange}
                         required
+                        placeholder="Av. Siempre Viva 123"
                     />
                     {errores.direccion && <div className="invalid-feedback">{errores.direccion}</div>}
                 </div>
+
                 <div className="col-md-6 mb-3">
-                    <label htmlFor="numeroDepartamento" className="form-label">Departamento (opcional)</label>
-                    {/* Corregido id, name */}
+                    <label htmlFor="numeroDepartamento" className="form-label">Nº Depto / Oficina</label>
                     <input
-                        type="text"
+                        type="number"
                         className="form-control"
                         id="numeroDepartamento"
                         name="numeroDepartamento"
@@ -91,10 +103,11 @@ export default function OrdenFormulario({ formData, handleChange, handleRegionCh
                     >
                         <option value="">Seleccione una región</option>
                         {regiones.map(region => (
-                            <option key={region} value={region}>{region}</option>
+                            <option key={region.regionId} value={region.regionId}>
+                                {region.nombreRegion}
+                            </option>
                         ))}
                     </select>
-                    {errores.region && <div className="invalid-feedback">{errores.region}</div>}
                 </div>
                 <div className="col-md-6 mb-3">
                     <label htmlFor="comuna" className="form-label">Comuna<small className="text-danger">*</small></label>
@@ -109,25 +122,27 @@ export default function OrdenFormulario({ formData, handleChange, handleRegionCh
                     >
                         <option value="">Seleccione una comuna</option>
                         {comunas.map(comuna => (
-                            <option key={comuna} value={comuna}>{comuna}</option>
+                            <option key={comuna.comunaId} value={comuna.nombreComuna}>
+                                {comuna.nombreComuna}
+                            </option>
                         ))}
                     </select>
                     {errores.comuna && <div className="invalid-feedback">{errores.comuna}</div>}
                 </div>
+
                 <div className="col-12 mb-3">
-                    <label htmlFor="indicacion" className="form-label">Indicaciones (opcional)</label>
+                    <label htmlFor="indicaciones" className="form-label">Indicaciones adicionales</label>
                     <textarea
                         className="form-control"
-                        name="indicacion"
-                        id="indicacion"
-                        rows="3"
-                        value={formData.indicacion || ''}
+                        name="indicaciones"
+                        id="indicaciones"
+                        rows="2"
+                        value={formData.indicaciones || ''}
                         onChange={handleChange}
-                        placeholder="Ej.: Entre calles, color del edificio, no tiene timbre."
+                        placeholder="Ej: Casa esquina reja blanca, dejar en conserjería."
                     ></textarea>
                 </div>
             </div>
-            {/* El botón de Pagar ahora estará en OrdenPage */}
         </>
     );
 }

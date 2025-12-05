@@ -44,7 +44,7 @@ export default function OrdenTable({ items = [], total }) {
                                         />
                                     </td>
                                     <td className='align-middle'>{item.nombreProducto}</td>
-                                    <td className='text-end align-middle'>{formatoChile(item.precioUnitarioAlAgregar)}</td>
+                                    <td className='text-end align-middle'>{formatoChile(item.precioUnitario)}</td>
                                     <td className='text-center align-middle'>{item.cantidad}</td>                              
                                     <td className='text-end align-middle'>{formatoChile(item.subTotal)}</td>
                                 </tr>

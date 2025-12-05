@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import OrdenCompletadoCard from '../OrdenCompletadoCard';
-import db from '../../../servicios/Database';
+import api from '../../../api/axiosConfig';
 export default function OrdenAdmin() {
     const { ordenId } = useParams(); 
     const [orden, setOrden] = useState(null);
@@ -9,24 +9,48 @@ export default function OrdenAdmin() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        setLoading(true);
-        setError(null);
-        try {
-            const idNum = parseInt(ordenId, 10);
-            const ordenEncontrada = db.obtenerOrdenPorId(idNum); 
+        const cargarOrden = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const boleta = await api.get(`/boletas/${ordenId}`);
+                const boletaDatos = boleta.data;
+                const ordenAdaptada = {
+                    ordenId: boletaDatos.boletaId,
+                    nombre: boletaDatos.usuario?.nombre,
+                    apellido: boletaDatos.usuario?.apellido,
+                    correo: boletaDatos.usuario?.email,
+                    direccion: boletaDatos.calle,
+                    numeroDepartamento: boletaDatos.numeroDepto,
+                    comuna: boletaDatos.comuna,
+                    region: "Chile",
+                    indicacion: boletaDatos.indicaciones,
+                    total: boletaDatos.totalBoleta,
+                    createdAt: boletaDatos.createdAt,
+                    items: boletaDatos.detalles?.map(detalle => ({
+                        productoId: detalle.producto?.productoId,
+                        nombreProducto: detalle.producto?.nombreProducto,
+                        imagenProducto: detalle.producto?.imagenProducto,
+                        precioUnitarioAlAgregar: detalle.subTotal / detalle.cantidad, 
+                        cantidad: detalle.cantidad,
+                        subTotal: detalle.subTotal
+                    })) || []
+                };
 
-            if (ordenEncontrada) {
-                setOrden(ordenEncontrada);
-            } else {
-                setError(`Orden con ID ${ordenId} no encontrada.`);
+                setOrden(ordenAdaptada);
+
+            } catch (err) {
+                console.error("Error al cargar la orden (admin):", err);
+                setError("No se pudo cargar la información de la orden o no existe.");
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            console.error("Error al cargar la orden (admin):", err);
-            setError("No se pudo cargar la información de la orden.");
-        } finally {
-            setLoading(false);
+        };
+
+        if (ordenId) {
+            cargarOrden();
         }
-    }, [ordenId]); 
+    }, [ordenId]);
 
     if (loading) return <p>Cargando orden...</p>; 
     if (error) return <div className="alert alert-danger">{error}</div>; 
@@ -40,8 +64,8 @@ export default function OrdenAdmin() {
                     </Link>
                     Orden de compra #{orden?.ordenId || ordenId}
                 </h4>
-                <p className="card-text text-muted mb-0">
-                    Emitida: {orden?.createdAt ? new Date(orden.createdAt).toLocaleString('es-CL') : 'N/A'}
+                <p className="card-text  mb-0 text-white">
+                    Emitida: {orden.createdAt.toLocaleString('es-CL')}
                 </p>
             </div>
             <hr /> 

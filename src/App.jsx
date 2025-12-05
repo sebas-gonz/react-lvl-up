@@ -31,6 +31,11 @@ import ReportesPage from "./paginas/Admin/Reportes/ReportesPage.jsx";
 import ProductoPage from "./paginas/ProductoPage.jsx";
 import OrdenConfirmadaPage from "./paginas/OrdenConfirmadaPage.jsx";
 import ProductosPorCategoriaPage from './paginas/ProductosPorCategoriaPage.jsx'
+import EditarPerfil from "./componentes/usuario/EditarPerfil.jsx";
+import Direcciones from "./componentes/direccion/Direcciones.jsx";
+import EditarProductoPage from "./paginas/Admin/Productos/EditarProductoPage.jsx";
+import EditarCategoria from "./componentes/Categorias/EditarCategoria.jsx";
+import Historial from "./componentes/usuario/Historial.jsx";
 function App() {
 
     return (
@@ -47,7 +52,9 @@ function App() {
                 <Route path="contacto" element={<ContactoPage />} />
                 <Route path="carrito" element={<CarritoPage />} />
                 <Route path="compra" element={<OrdenPage />} />
-
+                <Route path="perfil/editar" element={<EditarPerfil/>}/>
+                <Route path="perfil/direcciones" element={<Direcciones/>}/>
+                <Route path="perfil/historial" element ={<Historial/>}/>
                 <Route path="categorias/:categoriaId" element={<ProductosPorCategoriaPage />} />
 
                 <Route path="productos/:productoId" element={<ProductoPage />} />
@@ -73,9 +80,11 @@ function App() {
                     <Route path="productos/criticos" element={<ProductosCriticosPage/>}/>
                     <Route path="productos/tarjetas" element={<ProductosTarjetaPage/>}/>
                     <Route path="productos/nuevo" element={<NuevoProductoPage/>}/>
+                    <Route path="productos/editar/:productoId" element={<EditarProductoPage/>}/>
 
                     <Route path="categorias" element={<CategoriasAdminPage/>}/>
                     <Route path="categorias/nueva" element={<NuevaCategoriaPage/>}/>
+                    <Route path="categorias/editar/:categoriaId" element={<EditarCategoria/>}/>
 
                     <Route path="usuarios" element={<ListadoUsuariosPage/>}/>
                     <Route path="usuarios/nuevo" element={<NuevoUsuarioPage/>}/>

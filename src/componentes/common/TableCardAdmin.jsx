@@ -3,8 +3,8 @@ import TableAdmin from './TableAdmin'
 
 export default function TableCardAdmin({columnas, datos}) {
     return (
-        <div className="card text-start">
-            <div className="card-body">
+        <div className="card text-start shadow border-0 rounded-4 overflow-hidden">
+            <div className="card-body p-0">
                 <div className="table-responsive small">
                     <TableAdmin columnas={columnas} datos={datos}></TableAdmin>
                 </div>

@@ -2,15 +2,20 @@ import React, { useEffect, useState } from 'react'
 import '../../assets/estilos/header/navbar.css'
 import { Link } from 'react-router-dom'
 import api from '../../api/axiosConfig';
+import { usarCarrito } from '../../hooks/CarritoContext';
 export default function NavBar2() {
     const [categorias, setCategorias] = useState([]);
 
+    const { totalCompra, cantidadTotalItems } = usarCarrito();
+
+    const formatearTotal = (valor) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(valor);
+
     useEffect(() => {
         const cargarCategorias = async () => {
-            try{
+            try {
                 const categoriasCargadas = await api.get('/categorias')
                 setCategorias(categoriasCargadas.data)
-            } catch(e){
+            } catch (e) {
                 console.error("Error al cargar las categorias " + e)
             }
         }
@@ -35,7 +40,7 @@ export default function NavBar2() {
                                         <li key={categoria.categoriaId}>
                                             <Link
                                                 className="dropdown-item"
-                                                
+
                                                 to={`/categorias/${categoria.categoriaId}`}
                                             >
                                                 {categoria.nombreCategoria}
@@ -67,8 +72,17 @@ export default function NavBar2() {
                         </li>
 
                         <li className="nav-item ms-lg-5">
-                            <Link className="btn btn-success ms-5" to="/carrito"><strong><i className="bi bi-cart4"></i> Carrito <span className=""> <strong>$5.000</strong></span>
-                            </strong></Link>
+                            <Link className="btn btn-success ms-5 position-relative" to="/carrito">
+                                <i className="bi bi-cart4"></i> Carrito
+                                <span className="ms-2 fw-bold">
+                                    {formatearTotal(totalCompra)}
+                                </span>
+                                {cantidadTotalItems > 0 && (
+                                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {cantidadTotalItems}
+                                    </span>
+                                )}
+                            </Link>
                         </li>
                     </ul>
                 </div>

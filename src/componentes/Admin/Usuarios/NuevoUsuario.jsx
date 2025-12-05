@@ -2,6 +2,7 @@ import React from 'react'
 import MainProductosAdmin from '../../main/MainProductosAdmin'
 import NavbarProductosAdmin from '../../Producto/NavbarProductosAdmin'
 import Registro from '../../Autenticacion/Registro'
+import NuevoUsuarioForm from './NuevoUsuarioForm'
 
 export default function NuevoUsuario() {
     const usuarioLinks = [
@@ -11,9 +12,7 @@ export default function NuevoUsuario() {
     return (
         <MainProductosAdmin tituloText='Nuevo Usuario' parrafoText='Agregar un nuevo usuario'>
             <NavbarProductosAdmin links={usuarioLinks}></NavbarProductosAdmin>
-            <div className='mt-3'>
-                <Registro esAdmin={true}></Registro>
-            </div>
+            <NuevoUsuarioForm></NuevoUsuarioForm>
         </MainProductosAdmin>
     )
 }

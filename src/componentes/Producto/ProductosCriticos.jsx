@@ -3,106 +3,86 @@ import { Link } from 'react-router-dom';
 import TableCardAdmin from '../common/TableCardAdmin'
 import NavbarProductosAdmin from '../Producto/NavbarProductosAdmin';
 import MainProductosAdmin from '../main/MainProductosAdmin';
-import db from '../../servicios/Database';
+import api from '../../api/axiosConfig';
 
 export default function ProductosCriticosPage() {
     const [productosCriticos, setProductosCriticos] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setLoading(true);
-        try {
-            const productos = db.obtenerProductos();
-            const categorias = db.obtenerCategorias();
-            const productosConCategoria = productos.map(p => {
-                const cat = categorias.find(c => c.categoriaId === p.categoriaId);
-                return {
-                    productoId: p.productoId,
-                    imagenUrl: p.imagenesProducto,
-                    nombreProducto: p.nombreProducto,
-                    categoriaNombre: cat ? cat.nombreCategoria : 'Desconocida',
-                    descripcion: p.descripcionProducto,
-                    stock: p.stockProducto,
-                    stockMinimo: p.stockMinimoProducto
+        const fetchCriticos = async () => {
+            setLoading(true);
+            try {
+                const productos = await api.get('/productos');
+                
+                const criticos = productos.data
+                    .filter(p => p.stock <= p.stockMinimo)
+                    .map(p => ({
+                        productoId: p.productoId,
+                        imagenProducto: p.imagenProducto,
+                        nombreProducto: p.nombreProducto,
+                        categoriaNombre: p.categoria.nombreCategoria ,
+                        descripcionProducto: p.descripcionProducto,
+                        stock: p.stock,
+                        stockMinimo: p.stockMinimo
+                    }));
 
-                };
-            });
-            const criticos = productosConCategoria.filter(p => p.stock <= p.stockMinimo);
-            setProductosCriticos(criticos);
-        } catch (err) {
-            console.error("Error al cargar o filtrar productos críticos:", err);
-        } finally {
-            setLoading(false);
-        }
+                setProductosCriticos(criticos);
+            } catch (err) {
+                console.error("Error al cargar productos críticos:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCriticos();
     }, []);
 
 
     const renderizarEstadoStock = (item) => {
-        const diferencia = item.stock - item.stockMinimo;
+        const falta = item.stockMinimo - item.stock;
         if (item.stock === 0) {
-            return <span className="badge bg-dark">AGOTADO</span>;
-        } else if (diferencia <= 0) {
-            return <span className="badge bg-warning text-dark">SOLICITAR ({item.stockMinimo - item.stock})</span>;
+            return <span className="badge bg-danger">AGOTADO</span>;
+        } else {
+            return <span className="badge bg-warning text-dark">SOLICITAR ({falta > 0 ? falta : 0})</span>;
         }
-
     };
 
 
     const columnasConfigProductosCriticos = [
+        { header: '#', accessor: 'productoId' },
         {
-            header: '#',
-            accessor: 'productoId'
+            header: 'Imagen', accessor: 'imagenProducto',
+            render: (item) => <img src={item.imagenProducto} alt="img" className="rounded" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
         },
         {
-            header: 'Imagen',
-            accessor: 'imagenUrl',
-            render: (item) => <img src={item.imagenUrl} alt={item.nombreProducto} style={{ width: '50px', height: 'auto' }} />
+            header: 'Producto', accessor: 'nombreProducto',
+            render: (item) => <Link to={`/admin/producto/${item.productoId}`} className="text-decoration-none fw-bold">{item.nombreProducto}</Link>
         },
+        { header: 'Categoría', accessor: 'categoriaNombre' },
+        { header: 'Stock Actual', accessor: 'stock', cellClassName: 'text-center fw-bold' },
+        { header: 'Mínimo Requerido', accessor: 'stockMinimo', cellClassName: 'text-center' },
         {
-            header: 'Juego',
-            accessor: 'nombreProducto',
-            render: (item) => <Link to={`/admin/producto/${item.productoId}`}>{item.nombreProducto}</Link>
-        },
-        {
-            header: 'Categoría',
-            accessor: 'categoriaNombre'
-        },
-        {
-            header: 'Descripción',
-            accessor: 'descripcion'
-        },
-        {
-            header: 'Stock',
-            accessor: 'stock',
-            cellClassName: 'text-center'
-        },
-        {
-            header: 'Stock Crítico',
-            accessor: 'stockMinimo',
-            cellClassName: 'text-center'
-        },
-        {
-            header: '',
-            accessor: 'estadoStock',
-            render: renderizarEstadoStock,
-            cellClassName: 'text-center'
+            header: 'Estado', accessor: 'estadoStock',
+            render: renderizarEstadoStock, cellClassName: 'text-center'
         }
     ];
 
     const productosNavLinks = [
         { to: '/admin/productos', text: 'Listado de productos' },
         { to: '/admin/productos/criticos', text: 'Productos criticos' },
-        { to: '/admin/productos/tarjetas', text: 'Formato tarjeta' },
         { to: '/admin/productos/nuevo', text: 'Nuevo producto' }
     ]
 
-    if (loading) return <p>Cargando productos críticos...</p>;
+    if (loading) return (
+        <MainProductosAdmin tituloText='Productos Críticos' parrafoText='Verificando stock...'>
+            <div className="text-center my-5"><div className="spinner-border text-warning"></div></div>
+        </MainProductosAdmin>
+    );
 
     return (
-        <MainProductosAdmin tituloText='Productos Críticos' parrafoText='Listdo de productos'>
+        <MainProductosAdmin tituloText='Productos Críticos' parrafoText='Productos con bajo stock que requieren reposición'>
             <NavbarProductosAdmin links={productosNavLinks} />
             <TableCardAdmin columnas={columnasConfigProductosCriticos} datos={productosCriticos} />
         </MainProductosAdmin>
-
     );
 }

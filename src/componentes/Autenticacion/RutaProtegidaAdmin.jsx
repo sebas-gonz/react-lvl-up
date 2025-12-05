@@ -5,7 +5,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { usarAuth } from '../../hooks/usarAuth';
 
 
-const ROLES_PERMITIDOS = [1, 2];
+const ROLES_PERMITIDOS = ['ROLE_ADMIN', 'ROLE_VENDEDOR'];
 
 export default function RutaProtegidaAdmin() {
     const { usuarioActual, carga } = usarAuth();
@@ -19,7 +19,7 @@ export default function RutaProtegidaAdmin() {
     }
 
 
-    if (!ROLES_PERMITIDOS.includes(usuarioActual.tipoUsuario)) {
+    if (!ROLES_PERMITIDOS.includes(usuarioActual.rol)) {
         return <Navigate to="/" replace />;
     }
 
